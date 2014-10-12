@@ -1,11 +1,10 @@
 express = require "express"
+htmlData = require "fixtures/html"
 
 app = express()
 
 app.get "/get", (req, res) ->
-    res.send {
-        point: [1,2]
-    }
+    res.send htmlData
 
 app.listen 3000
 
