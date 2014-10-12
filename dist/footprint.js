@@ -1,1 +1,4 @@
-console.log("olol");
+$(function() {
+  var $body;
+  return $body = $("body");
+});
