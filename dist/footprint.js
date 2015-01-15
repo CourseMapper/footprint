@@ -54,9 +54,11 @@ $(function() {
     data: extendedData
   });
   $scroll.height(96 * $(window).height() / $body.height() + "%");
-  return $(window).scroll(function(e) {
+  $(window).scroll(function(e) {
     return $scroll.css({
       top: 100 * e.originalEvent.pageY / $body.height() + "%"
     });
   });
+  console.log($(".content"));
+  return $(".content").annotator();
 });

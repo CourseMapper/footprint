@@ -32,3 +32,6 @@ $ ->
 
     $(window).scroll (e) ->
         $scroll.css top: 100*  e.originalEvent.pageY / $body.height() + "%"
+
+    console.log $ ".content"
+    $(".content").annotator()
