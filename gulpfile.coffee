@@ -12,7 +12,9 @@ gulp.task "lint", ->
 gulp.task "coffee", ->
     gulp.src "./src/*.coffee"
         .pipe coffee bare: true
-        .on "error", gutil.log
+        .on "error", ->
+            console.log err.toString()
+            @emit "end"
         .pipe gulp.dest "./dist/"
 
 gulp.task "watch", ->

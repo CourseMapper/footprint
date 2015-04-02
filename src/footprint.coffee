@@ -35,3 +35,37 @@ $ ->
 
     console.log $ ".content"
     $(".content").annotator()
+
+class Observer
+
+    constructor: ->
+        @initEvents()
+
+    data: []
+
+    initEvents: ->
+        @tock = new Tock
+            interval: 1000
+            callback: @saveScrollPosition.bind @
+        .start()
+        $(window).on "unload", => do @sendData
+
+    saveScrollPosition: ->
+        p = @getCurrViewportPosition()
+        @data.push
+            value: 1
+            a: p.top
+            b: p.bottom
+        console.log @data
+
+    getCurrViewportPosition: ->
+        top = window.pageYOffset
+        bottom = top + $(window).height()
+        { top, bottom }
+
+    sendData: ->
+        $.post "http://localhost:3000/save",
+            type: "html"
+            data: @data
+
+$ -> new Observer

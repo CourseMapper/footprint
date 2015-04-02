@@ -1,3 +1,5 @@
+var Observer;
+
 $(function() {
   var $body, $scroll, $scrollBar, $scrollBarHolder, data, extendedData, heatmap;
   $body = $("body");
@@ -61,4 +63,59 @@ $(function() {
   });
   console.log($(".content"));
   return $(".content").annotator();
+});
+
+Observer = (function() {
+  function Observer() {
+    this.initEvents();
+  }
+
+  Observer.prototype.data = [];
+
+  Observer.prototype.initEvents = function() {
+    this.tock = new Tock({
+      interval: 1000,
+      callback: this.saveScrollPosition.bind(this)
+    }).start();
+    return $(window).on("unload", (function(_this) {
+      return function() {
+        return _this.sendData();
+      };
+    })(this));
+  };
+
+  Observer.prototype.saveScrollPosition = function() {
+    var p;
+    p = this.getCurrViewportPosition();
+    this.data.push({
+      value: 1,
+      a: p.top,
+      b: p.bottom
+    });
+    return console.log(this.data);
+  };
+
+  Observer.prototype.getCurrViewportPosition = function() {
+    var bottom, top;
+    top = window.pageYOffset;
+    bottom = top + $(window).height();
+    return {
+      top: top,
+      bottom: bottom
+    };
+  };
+
+  Observer.prototype.sendData = function() {
+    return $.post("http://localhost:3000/save", {
+      type: "html",
+      data: this.data
+    });
+  };
+
+  return Observer;
+
+})();
+
+$(function() {
+  return new Observer;
 });
