@@ -5,40 +5,88 @@ $ ->
     $scroll = $ ".scroll"
     heatmap = h337.create
         container: $scrollBar.get 0
-
-    data = [
-        {y: 120, value: 1}
-        {y: 170, value: 3}
-        {y: 210, value: 2}
-        {y: 270, value: 3}
-        {y: 320, value: 1}
-        {y: 350, value: 3}
-        {y: 550, value: 5}
-    ]
+    body = document.body
+    html = document.documentElement
+    pageHeight = Math.max body.scrollHeight, body.offsetHeight,
+        html.clientHeight, html.scrollHeight, html.offsetHeight
+    windowHeight = $(window).height()
 
     extendedData = []
-    _.each data, (item) ->
-        xVals = (x for x in [-20..300] by 10)
-        _.each xVals, (x) ->
-            newItem = _.clone item
-            newItem.x = x
-            extendedData.push newItem
 
-    heatmap.setData
-        max: 5
-        data: extendedData
+    $.get "http://localhost:3000/get", (response) ->
+        points = _.first response.result
+        if points
+            data = []
+            _.each points.data, (item) ->
+                a = item.a * windowHeight
+                b = item.b * windowHeight
+                data = data.concat _.map (_.range a, b, 20), (y) ->
+                    value: 1
+                    y: y
 
-    $scroll.height 96 * $(window).height() / $body.height() + "%"
+            _.each data, (item) ->
+                xVals = (x for x in [-20..300] by 10)
+                _.each xVals, (x) ->
+                    newItem = _.clone item
+                    newItem.x = x
+                    extendedData.push newItem
+
+            heatmap.setData
+                max: 5
+                data: extendedData
+
+    console.log $(window).height()
+    $scroll.height Math.floor(Math.pow($(window).height(), 2) / pageHeight) - 16 + "px"
 
     $(window).scroll (e) ->
-        $scroll.css top: 100*  e.originalEvent.pageY / $body.height() + "%"
+        $scroll.css top: 100 *  e.originalEvent.pageY / $body.height() + "%"
+
+    windowWidth = $(window).width()
+    isOpen = false
+
+    $(window).on "mousemove", (e) ->
+        isMouseClose = windowWidth - e.pageX < 150
+        if isMouseClose and not isOpen
+            console.log "open"
+            $scrollBarHolder.animate right: 0
+            isOpen = true
+        if not isMouseClose and isOpen
+            console.log "close"
+            isOpen = false
+            $scrollBarHolder.animate right: "-118px"
 
     console.log $ ".content"
     $(".content").annotator()
 
+# Inspired by https://github.com/mourner/simpleheat
+class LinearHeatmap
+
+    constructor: (canvas) ->
+        canvas = $(canvas).get 0
+        @ctx = canvas.getContext "2d"
+        { @width, @height } = canvas
+        @data = []
+        @max = 1
+
+    defaultGradient:
+        0.4: "blue"
+        0.6: "cyan"
+        0.7: "lime"
+        0.8: "yellow"
+        1.0: "red"
+
+    draw: ->
+        @ctx.clearRect 0, 0, @width, @height
+        _.each data, ([a, b, value]) ->
+
+
 class Observer
 
     constructor: ->
+        body = document.body
+        html = document.documentElement
+        @pageHeight = Math.max body.scrollHeight, body.offsetHeight,
+            html.clientHeight, html.scrollHeight, html.offsetHeight
         @initEvents()
 
     data: []
@@ -54,9 +102,8 @@ class Observer
         p = @getCurrViewportPosition()
         @data.push
             value: 1
-            a: p.top
-            b: p.bottom
-        console.log @data
+            a: p.top / @pageHeight
+            b: p.bottom / @pageHeight
 
     getCurrViewportPosition: ->
         top = window.pageYOffset

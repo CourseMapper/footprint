@@ -9,6 +9,7 @@
     <script src="/bower_components/heatmap.js.bower/build/heatmap.js"></script>
     <script src="/bower_components/annotator/annotator-full.min.js"></script>
     <script src="/bower_components/tock/tock.js"></script>
+    <script src="http://localhost:3000/simpleheat.js"></script>
     <script src="http://localhost:3000/footprint.js"></script>
     <style>
         html, body {
@@ -25,7 +26,7 @@
         .scrollbar-holder {
             position: fixed;
             width: 130px;
-            right: 0;
+            right: -118px;
             top: 0;
             bottom: 0;
             background-color: #333;
@@ -47,6 +48,9 @@
         h1 {
             margin: 0;
             line-height: 2em;
+        }
+        canvas {
+            height: 100%;
         }
     </style>
 </head>
@@ -132,7 +136,9 @@
         </p>
     </div>
     <div class="scrollbar-holder">
-        <div class="scrollbar"></div>
+        <div class="scrollbar">
+            <canvas id="canvas"></canvas>
+        </div>
         <div class="scroll"></div>
     </div>
 </body>

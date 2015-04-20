@@ -15,6 +15,7 @@ DataSchema = new mongoose.Schema
     value: Number
 
 PointSchema = new mongoose.Schema
+    url: String
     type: String
     data: [DataSchema]
 
@@ -41,12 +42,18 @@ app.get "/get", (req, res) ->
 
 app.post "/save", (req, res, next) ->
     data = req.body
+    data.url = req.headers.referer
     p = new Point data
-    console.log p
-    p.save (err) ->
-        res.json
-            code: 200
-            status: "OK"
-            id: p.id
+    Point.find { url: data.url }, (err, result) ->
+        if result.length > 1
+            console.log "More than one object was found"
+        if result.length is 1
+            p = result[0]
+            p.data = p.data.concat data.data
+        p.save (err) ->
+            res.json
+                code: 200
+                status: "OK"
+                id: p.id
 
 app.listen 3000
