@@ -1,5 +1,4 @@
 express = require "express"
-htmlData = require "fixtures/html"
 serveStatic = require "serve-static"
 mongoose = require "mongoose"
 bodyParser = require "body-parser"
