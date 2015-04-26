@@ -28,7 +28,7 @@ buildWidget = ->
                 right: 0
                 width: "100%"
         )
-        
+
 host = "http://46.101.153.234:3000"
 if location.hostname is "fp.dev"
     host = "http://localhost:3000"
@@ -71,11 +71,14 @@ $ ->
                 max: 5
                 data: extendedData
 
-    console.log $(window).height()
-    $scroll.height Math.floor(Math.pow($(window).height(), 2) / pageHeight) - 16 + "px"
+    windowHeeight = $(window).height()
+    scrollHeight = Math.floor(Math.pow(windowHeight, 2) / pageHeight) - 16 + "px"
+    $scroll.height _.min([scrollHeight, 18]) + "px"
 
     $(window).scroll (e) ->
-        $scroll.css top: 100 *  e.originalEvent.pageY / $body.height() + "%"
+        console.log Math.round(e.originalEvent.pageY / (pageHeight/(windowHeight - $scroll.outerHeight()))) + "px"
+        console.log e.originalEvent.pageY
+        $scroll.css top: Math.round(e.originalEvent.pageY / ((pageHeight - windowHeight)/(windowHeight - $scroll.outerHeight()))) + "px"
 
     windowWidth = $(window).width()
     isOpen = false
@@ -91,8 +94,8 @@ $ ->
             isOpen = false
             $scrollBarHolder.animate right: "-118px"
 
-    console.log $ ".content"
-    $(".content").annotator()
+    #console.log $ ".content"
+    #$(".content").annotator()
 
 # Inspired by https://github.com/mourner/simpleheat
 class LinearHeatmap

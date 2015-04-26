@@ -32,8 +32,7 @@ app.use cors
 app.use serveStatic "./dist"
 
 app.get "/get", (req, res) ->
-    console.log "GET"
-    Point.find {}, (err, result) ->
+    Point.find { url: req.headers.referer }, (err, result) ->
         res.json {
             result
             code: 200
