@@ -15,12 +15,21 @@ buildWidget = ->
             .css
                 width: "100%"
                 height: "100%"
-            .append create "canvas"
         ),
         (create "div"
             .addClass "scroll"
+            .css
+                backgroundColor: "transparent"
+                height: "100px"
+                borderTop: "4px solid #EEE"
+                borderBottom: "4px solid #EEE"
+                position: "absolute"
+                top: 0
+                right: 0
+                width: "100%"
         )
-host = "http://sabov.me:3000"
+        
+host = "http://46.101.153.234:3000"
 if location.hostname is "fp.dev"
     host = "http://localhost:3000"
 
