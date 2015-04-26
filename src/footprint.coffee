@@ -27,6 +27,7 @@ buildWidget = ->
                 top: 0
                 right: 0
                 width: "100%"
+                pointerEvents: "none"
         )
 
 host = "http://46.101.153.234:3000"
@@ -72,12 +73,10 @@ $ ->
                 data: extendedData
 
     windowHeeight = $(window).height()
-    scrollHeight = Math.floor(Math.pow(windowHeight, 2) / pageHeight) - 16 + "px"
-    $scroll.height _.min([scrollHeight, 18]) + "px"
+    scrollHeight = Math.floor(Math.pow(windowHeight, 2) / pageHeight) - 16
+    $scroll.height _.max([scrollHeight, 18]) + "px"
 
     $(window).scroll (e) ->
-        console.log Math.round(e.originalEvent.pageY / (pageHeight/(windowHeight - $scroll.outerHeight()))) + "px"
-        console.log e.originalEvent.pageY
         $scroll.css top: Math.round(e.originalEvent.pageY / ((pageHeight - windowHeight)/(windowHeight - $scroll.outerHeight()))) + "px"
 
     windowWidth = $(window).width()
@@ -93,6 +92,14 @@ $ ->
             console.log "close"
             isOpen = false
             $scrollBarHolder.animate right: "-118px"
+
+    $scrollBar.on "mousedown", (e) ->
+        $(window).scrollTop (e.clientY - $scroll.outerHeight() / 2) * ((pageHeight - windowHeight)/(windowHeight - $scroll.outerHeight()))
+        $scrollBar.on "mousemove", (e) ->
+            $(window).scrollTop (e.clientY - $scroll.outerHeight() / 2) * ((pageHeight - windowHeight)/(windowHeight - $scroll.outerHeight()))
+
+    $(window).on "mouseup", (e) ->
+        $scrollBar.off "mousemove"
 
     #console.log $ ".content"
     #$(".content").annotator()
