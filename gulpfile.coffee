@@ -23,7 +23,7 @@ gulp.task "coffee", ->
     gulp.src "./src/*.coffee"
         .pipe coffee bare: true
         .on "error", ->
-            console.log err.toString()
+            console.log err?.toString()
             @emit "end"
         .pipe gulp.dest "./dist/"
 
@@ -33,7 +33,7 @@ gulp.task "build", ->
         .pipe gulp.dest "./dist/"
 
 gulp.task "watch", ->
-    gulp.watch "./src/*.coffee", ["coffee"]
+    gulp.watch "./src/*.coffee", ["coffee", "build"]
 
 gulp.task "server", ->
     nodemon

@@ -1,8 +1,33 @@
-var LinearHeatmap, Observer;
+var LinearHeatmap, Observer, buildWidget, create, host;
+
+create = function(tag) {
+  return $("<" + tag + "></" + tag + ">");
+};
+
+buildWidget = function() {
+  return create("div").addClass("scrollbar-holder").css({
+    position: "fixed",
+    width: "130px",
+    right: "-118px",
+    top: 0,
+    bottom: 0,
+    backgroundColor: "#333"
+  }).append(create("div").addClass("scrollbar").css({
+    width: "100%",
+    height: "100%"
+  }).append(create("canvas")), create("div").addClass("scroll"));
+};
+
+host = "http://sabov.me:3000";
+
+if (location.hostname === "fp.dev") {
+  host = "http://localhost:3000";
+}
 
 $(function() {
-  var $body, $scroll, $scrollBar, $scrollBarHolder, body, extendedData, heatmap, host, html, isOpen, pageHeight, windowHeight, windowWidth;
+  var $body, $scroll, $scrollBar, $scrollBarHolder, body, extendedData, heatmap, html, isOpen, pageHeight, windowHeight, windowWidth;
   $body = $("body");
+  $body.append(buildWidget());
   $scrollBarHolder = $(".scrollbar-holder");
   $scrollBar = $(".scrollbar");
   $scroll = $(".scroll");
@@ -13,10 +38,6 @@ $(function() {
   html = document.documentElement;
   pageHeight = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
   windowHeight = $(window).height();
-  host = "http://sabov.me:3000";
-  if (location.hostname === "fp.dev") {
-    host = "http://localhost:3000";
-  }
   extendedData = [];
   $.get(host + "/get", function(response) {
     var data, points;

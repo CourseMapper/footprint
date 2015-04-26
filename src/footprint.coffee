@@ -1,5 +1,32 @@
+create = (tag) -> $ "<#{tag}></#{tag}>"
+
+buildWidget = ->
+    create "div"
+    .addClass "scrollbar-holder"
+    .css
+        position: "fixed"
+        width: "130px"
+        right: "-118px"
+        top: 0
+        bottom: 0
+        backgroundColor: "#333"
+    .append (create "div"
+            .addClass "scrollbar"
+            .css
+                width: "100%"
+                height: "100%"
+            .append create "canvas"
+        ),
+        (create "div"
+            .addClass "scroll"
+        )
+host = "http://sabov.me:3000"
+if location.hostname is "fp.dev"
+    host = "http://localhost:3000"
+
 $ ->
     $body = $ "body"
+    $body.append buildWidget()
     $scrollBarHolder = $ ".scrollbar-holder"
     $scrollBar = $ ".scrollbar"
     $scroll = $ ".scroll"
@@ -10,10 +37,6 @@ $ ->
     pageHeight = Math.max body.scrollHeight, body.offsetHeight,
         html.clientHeight, html.scrollHeight, html.offsetHeight
     windowHeight = $(window).height()
-
-    host = "http://sabov.me:3000"
-    if location.hostname is "fp.dev"
-        host = "http://localhost:3000"
 
     extendedData = []
 
