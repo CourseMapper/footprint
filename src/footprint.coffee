@@ -5,6 +5,7 @@ buildWidget = ->
     .addClass "scrollbar-holder"
     .css
         position: "fixed"
+        zIndex: 99999
         width: "130px"
         right: "-118px"
         top: 0
@@ -19,11 +20,11 @@ buildWidget = ->
         (create "div"
             .addClass "scroll"
             .css
-                backgroundColor: "transparent"
                 height: "100px"
                 borderTop: "4px solid #EEE"
                 borderBottom: "4px solid #EEE"
                 position: "absolute"
+                backgroundColor: "rgba(255,255,255,0.3)"
                 top: 0
                 right: 0
                 width: "100%"
@@ -73,7 +74,7 @@ $ ->
                 data: extendedData
 
     windowHeeight = $(window).height()
-    scrollHeight = Math.floor(Math.pow(windowHeight, 2) / pageHeight) - 16
+    scrollHeight = Math.floor(Math.pow(windowHeight, 2) / pageHeight) - 8
     $scroll.height _.max([scrollHeight, 18]) + "px"
 
     $(window).scroll (e) ->
