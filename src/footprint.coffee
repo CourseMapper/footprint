@@ -11,9 +11,13 @@ $ ->
         html.clientHeight, html.scrollHeight, html.offsetHeight
     windowHeight = $(window).height()
 
+    host = "http://sabov.me:3000"
+    if location.hostname is "fp.dev"
+        host = "http://localhost:3000"
+
     extendedData = []
 
-    $.get "http://localhost:3000/get", (response) ->
+    $.get host + "/get", (response) ->
         points = _.first response.result
         if points
             data = []
@@ -111,7 +115,7 @@ class Observer
         { top, bottom }
 
     sendData: ->
-        $.post "http://localhost:3000/save",
+        $.post host + "/save",
             type: "html"
             data: @data
 

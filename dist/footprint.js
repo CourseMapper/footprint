@@ -1,7 +1,7 @@
 var LinearHeatmap, Observer;
 
 $(function() {
-  var $body, $scroll, $scrollBar, $scrollBarHolder, body, extendedData, heatmap, html, isOpen, pageHeight, windowHeight, windowWidth;
+  var $body, $scroll, $scrollBar, $scrollBarHolder, body, extendedData, heatmap, host, html, isOpen, pageHeight, windowHeight, windowWidth;
   $body = $("body");
   $scrollBarHolder = $(".scrollbar-holder");
   $scrollBar = $(".scrollbar");
@@ -13,8 +13,12 @@ $(function() {
   html = document.documentElement;
   pageHeight = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
   windowHeight = $(window).height();
+  host = "http://sabov.me:3000";
+  if (location.hostname === "fp.dev") {
+    host = "http://localhost:3000";
+  }
   extendedData = [];
-  $.get("http://localhost:3000/get", function(response) {
+  $.get(host + "/get", function(response) {
     var data, points;
     points = _.first(response.result);
     if (points) {
@@ -157,7 +161,7 @@ Observer = (function() {
   };
 
   Observer.prototype.sendData = function() {
-    return $.post("http://localhost:3000/save", {
+    return $.post(host + "/save", {
       type: "html",
       data: this.data
     });
