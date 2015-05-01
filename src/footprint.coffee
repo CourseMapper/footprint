@@ -122,7 +122,9 @@ class LinearHeatmap
         { @width, @height } = canvas
         @data = []
         @max = 1
-        @draw()
+        @palette = do @buildPalette
+        console.log @palette
+        do @draw
 
     defaultGradient:
         0.4: "blue"
@@ -136,10 +138,22 @@ class LinearHeatmap
     draw: ->
         do @clear
         grd = @ctx.createLinearGradient 0, 0, 0, @height
-        _.forIn (_.invert @defaultGradient), grd.addColorStop.bind grd
+        grd.addColorStop 0.5, @getRGBColor 255
         @ctx.fillStyle = grd
         @ctx.fillRect 0, 0, @width, @height
 
+    buildPalette: ->
+        canvas = document.createElement "canvas"
+        ctx = canvas.getContext "2d"
+        grd = ctx.createLinearGradient 0, 0, 0, 256
+        canvas.width = 1
+        canvas.height = 256
+        _.forIn (_.invert @defaultGradient), grd.addColorStop.bind grd
+        ctx.fillStyle = grd
+        ctx.fillRect 0, 0, 1, 256
+        _.chunk ctx.getImageData(0, 0, 1, 256).data, 4
+
+    getRGBColor: (index) -> "rgb(#{@palette[index].slice(0, -1).join ","})"
 
 class Observer
 

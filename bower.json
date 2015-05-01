@@ -16,7 +16,7 @@
   "dependencies": {
     "jquery": "~2.1.1",
     "heatmap.js.bower": "v2.0",
-    "lodash": "~2.4.1",
+    "lodash": "~3.8",
     "annotator": "~1.2.9",
     "tock": "~1.0.5"
   }
