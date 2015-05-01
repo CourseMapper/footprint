@@ -7,7 +7,7 @@ buildWidget = ->
         position: "fixed"
         zIndex: 99999
         width: "130px"
-        right: "-118px"
+        right: "0px"
         top: 0
         bottom: 0
         backgroundColor: "#333"
@@ -24,7 +24,7 @@ buildWidget = ->
                 borderTop: "4px solid #EEE"
                 borderBottom: "4px solid #EEE"
                 position: "absolute"
-                backgroundColor: "rgba(255,255,255,0.3)"
+                backgroundColor: "rgba(255,255,255,0)"
                 top: 0
                 right: 0
                 width: "100%"
@@ -41,8 +41,10 @@ $ ->
     $scrollBarHolder = $ ".scrollbar-holder"
     $scrollBar = $ ".scrollbar"
     $scroll = $ ".scroll"
+    ###
     heatmap = h337.create
         container: $scrollBar.get 0
+    ###
     body = document.body
     html = document.documentElement
     pageHeight = Math.max body.scrollHeight, body.offsetHeight,
@@ -69,9 +71,11 @@ $ ->
                     newItem.x = x
                     extendedData.push newItem
 
+            ###
             heatmap.setData
                 max: 5
                 data: extendedData
+            ###
 
     windowHeeight = $(window).height()
     scrollHeight = Math.floor(Math.pow(windowHeight, 2) / pageHeight) - 8
@@ -83,6 +87,7 @@ $ ->
     windowWidth = $(window).width()
     isOpen = false
 
+    ###
     $(window).on "mousemove", (e) ->
         isMouseClose = windowWidth - e.pageX < 150
         if isMouseClose and not isOpen
@@ -93,6 +98,7 @@ $ ->
             console.log "close"
             isOpen = false
             $scrollBarHolder.animate right: "-118px"
+    ###
 
     $scrollBar.on "mousedown", (e) ->
         $(window).scrollTop (e.clientY - $scroll.outerHeight() / 2) * ((pageHeight - windowHeight)/(windowHeight - $scroll.outerHeight()))
@@ -109,11 +115,14 @@ $ ->
 class LinearHeatmap
 
     constructor: (canvas) ->
+        canvas = create "canvas"
+        .appendTo ".scrollbar"
         canvas = $(canvas).get 0
         @ctx = canvas.getContext "2d"
         { @width, @height } = canvas
         @data = []
         @max = 1
+        @draw()
 
     defaultGradient:
         0.4: "blue"
@@ -122,9 +131,14 @@ class LinearHeatmap
         0.8: "yellow"
         1.0: "red"
 
+    clear: -> @ctx.clearRect 0, 0, @width, @height
+
     draw: ->
-        @ctx.clearRect 0, 0, @width, @height
-        _.each data, ([a, b, value]) ->
+        do @clear
+        grd = @ctx.createLinearGradient 0, 0, 0, @height
+        _.forIn (_.invert @defaultGradient), grd.addColorStop.bind grd
+        @ctx.fillStyle = grd
+        @ctx.fillRect 0, 0, @width, @height
 
 
 class Observer
@@ -158,8 +172,11 @@ class Observer
         { top, bottom }
 
     sendData: ->
+        ###
         $.post host + "/save",
             type: "html"
             data: @data
+        ###
 
 $ -> new Observer
+$ -> new LinearHeatmap
