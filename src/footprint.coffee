@@ -45,6 +45,7 @@ $ ->
     heatmap = h337.create
         container: $scrollBar.get 0
     ###
+    heatmap = new LinearHeatmap
     body = document.body
     html = document.documentElement
     pageHeight = Math.max body.scrollHeight, body.offsetHeight,
@@ -70,6 +71,10 @@ $ ->
                     newItem = _.clone item
                     newItem.x = x
                     extendedData.push newItem
+
+            heatmap
+                .setData points.data
+                .draw()
 
             ###
             heatmap.setData
@@ -124,14 +129,6 @@ class LinearHeatmap
         @stopPoints = []
         @max = 1
         @palette = do @buildPalette
-        @setData [
-            {a:0, b:0.2, value: 1}
-            {a:0.1, b:0.3, value: 1}
-            {a:0, b:0.5, value: 1}
-        ]
-        do @prepareData
-        console.log @stopPoints
-        do @draw
 
     defaultMaxStopPoint: 100
 
@@ -145,6 +142,8 @@ class LinearHeatmap
     clear: -> @ctx.clearRect 0, 0, @width, @height
 
     setData: (@data) ->
+        do @prepareData
+        @
 
     prepareData: ->
         @stopPoints = new Array @height
@@ -159,7 +158,8 @@ class LinearHeatmap
         do @clear
         grd = @ctx.createLinearGradient 0, 0, 0, @height
         _.each @stopPoints, (value, point) =>
-            grd.addColorStop point / @height, @getRGBAColor Math.round value * 255 / @maxStopPoint
+            if value % 2 is 0
+                grd.addColorStop point / @height, @getRGBAColor Math.round value * 255 / @maxStopPoint
         @ctx.fillStyle = grd
         @ctx.fillRect 0, 0, @width, @height
 
@@ -173,12 +173,8 @@ class LinearHeatmap
         ctx.fillStyle = grd
         ctx.fillRect 0, 0, 1, 256
         _.map (_.chunk ctx.getImageData(0, 0, 1, 256).data, 4), ([r,g,b,a], i) ->
-            if i < 30
-                [r,g,b,0]
-            else if i < 40
-                [r,g,b,(i-30)/10]
-            else
-                [r,g,b,1]
+            a = Math.pow i/200, 2
+            [r,g,b,a]
 
     getRGBAColor: (index) -> "rgba(#{@palette[index].join ","})"
 
@@ -213,11 +209,8 @@ class Observer
         { top, bottom }
 
     sendData: ->
-        ###
         $.post host + "/save",
             type: "html"
             data: @data
-        ###
 
 $ -> new Observer
-$ -> new LinearHeatmap
