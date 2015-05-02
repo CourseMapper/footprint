@@ -121,10 +121,19 @@ class LinearHeatmap
         @ctx = canvas.getContext "2d"
         { @width, @height } = canvas
         @data = []
+        @stopPoints = []
         @max = 1
         @palette = do @buildPalette
-        console.log @palette
+        @setData [
+            {a:0, b:0.2, value: 1}
+            {a:0.1, b:0.3, value: 1}
+            {a:0, b:0.5, value: 1}
+        ]
+        do @prepareData
+        console.log @stopPoints
         do @draw
+
+    defaultMaxStopPoint: 100
 
     defaultGradient:
         0.4: "blue"
@@ -135,10 +144,22 @@ class LinearHeatmap
 
     clear: -> @ctx.clearRect 0, 0, @width, @height
 
+    setData: (@data) ->
+
+    prepareData: ->
+        @stopPoints = new Array @height
+        _.fill @stopPoints, 0
+        _.each @data, ({a, b, value}) =>
+            from = Math.round a * @height
+            to = Math.round b * @height
+            @stopPoints[i] += value for i in [from...to]
+        @maxStopPoint = _.max @stopPoints.concat [@defaultMaxStopPoint]
+
     draw: ->
         do @clear
         grd = @ctx.createLinearGradient 0, 0, 0, @height
-        grd.addColorStop 0.5, @getRGBColor 255
+        _.each @stopPoints, (value, point) =>
+            grd.addColorStop point / @height, @getRGBAColor Math.round value * 255 / @maxStopPoint
         @ctx.fillStyle = grd
         @ctx.fillRect 0, 0, @width, @height
 
@@ -151,9 +172,15 @@ class LinearHeatmap
         _.forIn (_.invert @defaultGradient), grd.addColorStop.bind grd
         ctx.fillStyle = grd
         ctx.fillRect 0, 0, 1, 256
-        _.chunk ctx.getImageData(0, 0, 1, 256).data, 4
+        _.map (_.chunk ctx.getImageData(0, 0, 1, 256).data, 4), ([r,g,b,a], i) ->
+            if i < 30
+                [r,g,b,0]
+            else if i < 40
+                [r,g,b,(i-30)/10]
+            else
+                [r,g,b,1]
 
-    getRGBColor: (index) -> "rgb(#{@palette[index].slice(0, -1).join ","})"
+    getRGBAColor: (index) -> "rgba(#{@palette[index].join ","})"
 
 class Observer
 
