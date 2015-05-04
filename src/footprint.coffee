@@ -7,7 +7,7 @@ buildWidget = ->
         position: "fixed"
         zIndex: 99999
         width: "130px"
-        right: "0px"
+        right: "-118px"
         top: 0
         bottom: 0
         backgroundColor: "#333"
@@ -92,7 +92,6 @@ $ ->
     windowWidth = $(window).width()
     isOpen = false
 
-    ###
     $(window).on "mousemove", (e) ->
         isMouseClose = windowWidth - e.pageX < 150
         if isMouseClose and not isOpen
@@ -103,7 +102,6 @@ $ ->
             console.log "close"
             isOpen = false
             $scrollBarHolder.animate right: "-118px"
-    ###
 
     $scrollBar.on "mousedown", (e) ->
         $(window).scrollTop (e.clientY - $scroll.outerHeight() / 2) * ((pageHeight - windowHeight)/(windowHeight - $scroll.outerHeight()))
@@ -128,7 +126,8 @@ class LinearHeatmap
         @data = []
         @stopPoints = []
         @max = 1
-        @palette = do @buildPalette
+        @colorPalette = do @buildColorPalette
+        @sampleLine = do @buildSampleLine
 
     defaultMaxStopPoint: 100
 
@@ -158,12 +157,11 @@ class LinearHeatmap
         do @clear
         grd = @ctx.createLinearGradient 0, 0, 0, @height
         _.each @stopPoints, (value, point) =>
-            if value % 2 is 0
-                grd.addColorStop point / @height, @getRGBAColor Math.round value * 255 / @maxStopPoint
+            grd.addColorStop point / @height, @getRGBAColor Math.round value * 255 / @maxStopPoint
         @ctx.fillStyle = grd
         @ctx.fillRect 0, 0, @width, @height
 
-    buildPalette: ->
+    buildColorPalette: ->
         canvas = document.createElement "canvas"
         ctx = canvas.getContext "2d"
         grd = ctx.createLinearGradient 0, 0, 0, 256
@@ -176,7 +174,22 @@ class LinearHeatmap
             a = Math.pow i/200, 2
             [r,g,b,a]
 
-    getRGBAColor: (index) -> "rgba(#{@palette[index].join ","})"
+    buildSampleLine: ->
+        canvas = document.createElement "canvas"
+        ctx = canvas.getContext "2d"
+        canvas.width = 1
+        canvas.height = 100
+        ctx.shadowOffsetX = 200
+        ctx.shadowBlur = 15
+        ctx.shadowColor = "black"
+
+        ctx.beginPath()
+        ctx.rect -300, 15, 100, 100
+        ctx.closePath()
+        ctx.fill()
+        _.map _.chunk ctx.getImageData(0, 0, 1, 100).data, 4
+
+    getRGBAColor: (index) -> "rgba(#{@colorPalette[index].join ","})"
 
 class Observer
 
