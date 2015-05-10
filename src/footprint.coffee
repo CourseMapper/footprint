@@ -31,24 +31,21 @@ buildWidget = ->
                 pointerEvents: "none"
         )
 
-host = "http://46.101.153.234:3000"
-if location.hostname is "fp.dev"
-    host = "http://localhost:3000"
-
+###
 $ ->
-    $body = $ "body"
-    $body.append buildWidget()
-    $scrollBarHolder = $ ".scrollbar-holder"
-    $scrollBar = $ ".scrollbar"
-    $scroll = $ ".scroll"
-    ###
+    $container = $ "#viewer"
+    $container.append buildWidget()
+    $scrollBarHolder = $container.find ".scrollbar-holder"
+    $scrollBar = $container.find ".scrollbar"
+    $scroll = $container.find ".scroll"
+
     heatmap = h337.create
         container: $scrollBar.get 0
-    ###
+
     heatmap = new LinearHeatmap
     body = document.body
     html = document.documentElement
-    pageHeight = Math.max body.scrollHeight, body.offsetHeight,
+    pageHeight = Math.max $container.get(0).scrollHeight, $container.get(0).offsetHeight,
         html.clientHeight, html.scrollHeight, html.offsetHeight
     windowHeight = $(window).height()
 
@@ -76,17 +73,14 @@ $ ->
                 .setData points.data
                 .draw()
 
-            ###
             heatmap.setData
                 max: 5
                 data: extendedData
-            ###
 
-    windowHeeight = $(window).height()
     scrollHeight = Math.floor(Math.pow(windowHeight, 2) / pageHeight) - 8
     $scroll.height _.max([scrollHeight, 18]) + "px"
 
-    $(window).scroll (e) ->
+    $container.scroll (e) ->
         $scroll.css top: Math.round(e.originalEvent.pageY / ((pageHeight - windowHeight)/(windowHeight - $scroll.outerHeight()))) + "px"
 
     windowWidth = $(window).width()
@@ -113,6 +107,56 @@ $ ->
 
     #console.log $ ".content"
     #$(".content").annotator()
+###
+
+class Viewer
+
+    constructor: (el = body) ->
+        @el = $ el
+        @host = @getHost()
+        @data = null
+        @initWidget()
+        @initScroll()
+        @heatmap = new LinearHeatmap
+        @getData()
+        .done =>
+            @heatmap.setData @data
+            @heatmap.draw()
+
+    initWidget: ->
+        { top } = @el.offset()
+        contentHeight = @el.get(0).scrollHeight
+
+        $scrollBarHolder = buildWidget()
+        $scrollBarHolder.css { top }
+        $scroll = $scrollBarHolder.find ".scroll"
+        @el.append $scrollBarHolder
+
+        scrollHeight = Math.floor(Math.pow($scrollBarHolder.height(), 2) / contentHeight) - 8
+        $scroll.height _.max([scrollHeight, 18]) + "px"
+
+    getHost: ->
+        if location.hostname is "fp.dev"
+            "http://localhost:3000"
+        else
+            "http://46.101.153.234:3000"
+
+    getData: ->
+        $.get @host + "/get", (response) =>
+            @data = _.first(response.result)?.data
+
+    initScroll: ->
+        $scroll = @el.find ".scroll"
+        @el.scroll =>
+            scrollHeight = $scroll.outerHeight()
+            contentHeight = @el.get(0).scrollHeight
+            windowHeight = $(window).height()
+            top = @el.scrollTop()
+
+            top = top / ((contentHeight - windowHeight) / (windowHeight - scrollHeight))
+            top = Math.round top
+            top += "px"
+            $scroll.css { top }
 
 # Inspired by https://github.com/mourner/simpleheat
 class LinearHeatmap
@@ -226,4 +270,8 @@ class Observer
             type: "html"
             data: @data
 
-$ -> new Observer
+$ ->
+    #new Observer
+    setTimeout ->
+        new Viewer "#viewerContainer"
+    , 1000
