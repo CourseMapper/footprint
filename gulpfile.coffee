@@ -11,6 +11,7 @@ buildScripts = [
     "./bower_components/lodash/lodash.min.js"
     "./bower_components/heatmap.js.bower/build/heatmap.min.js"
     "./bower_components/tock/tock.min.js"
+    "./bower_components/jquery-mousewheel/jquery.mousewheel.min.js"
     "./dist/footprint.js"
 ]
 

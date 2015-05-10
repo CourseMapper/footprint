@@ -6,8 +6,8 @@ buildWidget = ->
     .css
         position: "fixed"
         zIndex: 99999
-        width: "130px"
-        right: "-118px"
+        width: "50px"
+        right: "-38px"
         top: 0
         bottom: 0
         backgroundColor: "#333"
@@ -113,10 +113,13 @@ class Viewer
 
     constructor: (el = body) ->
         @el = $ el
+        @scrollBarHolder = @scrollBar = @scroll = @top = null
         @host = @getHost()
         @data = null
+        @isOpen = false
         @initWidget()
         @initScroll()
+        @initEvents()
         @heatmap = new LinearHeatmap
         @getData()
         .done =>
@@ -124,16 +127,15 @@ class Viewer
             @heatmap.draw()
 
     initWidget: ->
-        { top } = @el.offset()
+        { @top } = @el.offset()
         contentHeight = @el.get(0).scrollHeight
 
-        $scrollBarHolder = buildWidget()
-        $scrollBarHolder.css { top }
-        $scroll = $scrollBarHolder.find ".scroll"
-        @el.append $scrollBarHolder
-
-        scrollHeight = Math.floor(Math.pow($scrollBarHolder.height(), 2) / contentHeight) - 8
-        $scroll.height _.max([scrollHeight, 18]) + "px"
+        @scrollBarHolder = buildWidget()
+        @scrollBarHolder.css top: @top
+        @scrollBar = @scrollBarHolder.find ".scrollbar"
+        @scroll = @scrollBarHolder.find ".scroll"
+        @el.append @scrollBarHolder
+        @setScrollSize()
 
     getHost: ->
         if location.hostname is "fp.dev"
@@ -145,18 +147,53 @@ class Viewer
         $.get @host + "/get", (response) =>
             @data = _.first(response.result)?.data
 
+    setScrollSize: ->
+        contentHeight = @el.get(0).scrollHeight
+        scrollHeight = Math.floor(Math.pow(@scrollBarHolder.height(), 2) / contentHeight) - 12
+        @scroll.height _.max([scrollHeight, 18]) + "px"
+
     initScroll: ->
-        $scroll = @el.find ".scroll"
         @el.scroll =>
-            scrollHeight = $scroll.outerHeight()
+            @setScrollSize()
+            scrollHeight = @scroll.outerHeight()
             contentHeight = @el.get(0).scrollHeight
-            windowHeight = $(window).height()
+            windowHeight = @scrollBarHolder.height()
             top = @el.scrollTop()
 
             top = top / ((contentHeight - windowHeight) / (windowHeight - scrollHeight))
             top = Math.round top
             top += "px"
-            $scroll.css { top }
+            @scroll.css { top }
+
+    getElScrollPosition: (clientY) ->
+        windowHeight = @scrollBarHolder.height()
+        contentHeight = @el.get(0).scrollHeight
+        (clientY - @scroll.outerHeight() / 2) * ((contentHeight - windowHeight)/(windowHeight - @scroll.outerHeight()))
+
+    initEvents: ->
+        $(window)
+            .on "resize", => @setScrollSize()
+            .on "mousemove", (e) =>
+                isMouseClose = $(window).width() - e.pageX < 50
+                if isMouseClose and not @isOpen
+                    @scrollBarHolder.animate right: 0
+                    @isOpen = true
+                if not isMouseClose and @isOpen
+                    @isOpen = false
+                    @scrollBarHolder.animate right: "-38px"
+            .on "mouseup", (e) =>
+                @scrollBar.off "mousemove"
+
+        @scrollBarHolder.on "mousewheel", (e) =>
+            @el.scrollTop()
+            @el.scrollTop @el.scrollTop() - e.deltaY
+            true
+
+        @scrollBar.on "mousedown", (e) =>
+            @el.scrollTop @getElScrollPosition e.clientY - @top
+            @scrollBar.on "mousemove", (e) =>
+                @el.scrollTop @getElScrollPosition e.clientY - @top
+
 
 # Inspired by https://github.com/mourner/simpleheat
 class LinearHeatmap
@@ -272,6 +309,4 @@ class Observer
 
 $ ->
     #new Observer
-    setTimeout ->
-        new Viewer "#viewerContainer"
-    , 1000
+    new Viewer "#viewerContainer"
