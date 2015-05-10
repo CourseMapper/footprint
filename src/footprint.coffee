@@ -24,7 +24,7 @@ buildWidget = ->
                 borderTop: "4px solid #EEE"
                 borderBottom: "4px solid #EEE"
                 position: "absolute"
-                backgroundColor: "rgba(255,255,255,0.1)"
+                backgroundColor: "rgba(255,255,255,0.05)"
                 top: 0
                 right: 0
                 width: "100%"
@@ -130,7 +130,6 @@ class LinearHeatmap
         @stopPoints = []
         @max = 1
         @colorPalette = do @buildColorPalette
-        @sampleLine = do @buildSampleLine
 
     defaultMaxStopPoint: 100
 
@@ -162,17 +161,19 @@ class LinearHeatmap
             from = Math.round a * @height
             to = Math.round b * @height
             length = to - from + 1
-            @ctx.lineWidth = 0.2
-            _.each [from...to], (y) =>
-                k = Math.floor ((y - from) / length) * 100
-                @ctx.globalAlpha = 0.001 * @sampleLine[k][3]
-                @ctx.beginPath()
-                @ctx.moveTo 0, y
-                @ctx.lineTo @width, y
-                @ctx.stroke()
+            @ctx.globalAlpha = 0.1
+            grd = @ctx.createLinearGradient 0, 0, 0, length
+            @ctx.save()
+            @ctx.translate 0, from
+            grd.addColorStop 0, "transparent"
+            grd.addColorStop 0.2, "black"
+            grd.addColorStop 0.8, "black"
+            grd.addColorStop 1, "transparent"
+            @ctx.fillStyle = grd
+            @ctx.fillRect 0, 0, @width, length
+            @ctx.restore()
         grayHeatMap = @ctx.getImageData 0, 0, @width, @height
         @colorize grayHeatMap.data
-        console.log "done"
         @ctx.putImageData grayHeatMap, 0, 0
 
     colorize: (pixels) ->
@@ -184,34 +185,16 @@ class LinearHeatmap
                 pixels[i - 1] = @colorPalette[opacity][2] # b
 
     buildColorPalette: ->
+        paletteLength = 256
         canvas = document.createElement "canvas"
         ctx = canvas.getContext "2d"
-        grd = ctx.createLinearGradient 0, 0, 0, 256
+        grd = ctx.createLinearGradient 0, 0, 0, paletteLength
         canvas.width = 1
-        canvas.height = 256
+        canvas.height = paletteLength
         _.forIn (_.invert @defaultGradient), grd.addColorStop.bind grd
         ctx.fillStyle = grd
-        ctx.fillRect 0, 0, 1, 256
-        _.map (_.chunk ctx.getImageData(0, 0, 1, 256).data, 4), ([r,g,b,a], i) ->
-            a = Math.pow i/200, 2
-            [r,g,b,a]
-
-    buildSampleLine: ->
-        canvas = document.createElement "canvas"
-        ctx = canvas.getContext "2d"
-        canvas.width = 1
-        canvas.height = 100
-        ctx.shadowOffsetX = 200
-        ctx.shadowBlur = 25
-        ctx.shadowColor = "black"
-
-        ctx.beginPath()
-        ctx.rect -300, 15, 100, 50
-        ctx.closePath()
-        ctx.fill()
-        _.map _.chunk ctx.getImageData(0, 0, 1, 100).data, 4
-
-    getRGBAColor: (index) -> "rgba(#{@colorPalette[index].join ","})"
+        ctx.fillRect 0, 0, 1, paletteLength
+        _.chunk ctx.getImageData(0, 0, 1, paletteLength).data, 4
 
 class Observer
 
