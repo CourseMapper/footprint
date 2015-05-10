@@ -24,103 +24,30 @@ buildWidget = ->
                 borderTop: "4px solid #EEE"
                 borderBottom: "4px solid #EEE"
                 position: "absolute"
-                backgroundColor: "rgba(255,255,255,0)"
+                backgroundColor: "rgba(255,255,255,0.1)"
                 top: 0
                 right: 0
                 width: "100%"
                 pointerEvents: "none"
         )
 
-###
-$ ->
-    $container = $ "#viewer"
-    $container.append buildWidget()
-    $scrollBarHolder = $container.find ".scrollbar-holder"
-    $scrollBar = $container.find ".scrollbar"
-    $scroll = $container.find ".scroll"
-
-    heatmap = h337.create
-        container: $scrollBar.get 0
-
-    heatmap = new LinearHeatmap
-    body = document.body
-    html = document.documentElement
-    pageHeight = Math.max $container.get(0).scrollHeight, $container.get(0).offsetHeight,
-        html.clientHeight, html.scrollHeight, html.offsetHeight
-    windowHeight = $(window).height()
-
-    extendedData = []
-
-    $.get host + "/get", (response) ->
-        points = _.first response.result
-        if points
-            data = []
-            _.each points.data, (item) ->
-                a = item.a * windowHeight
-                b = item.b * windowHeight
-                data = data.concat _.map (_.range a, b, 20), (y) ->
-                    value: 1
-                    y: y
-
-            _.each data, (item) ->
-                xVals = (x for x in [-20..300] by 10)
-                _.each xVals, (x) ->
-                    newItem = _.clone item
-                    newItem.x = x
-                    extendedData.push newItem
-
-            heatmap
-                .setData points.data
-                .draw()
-
-            heatmap.setData
-                max: 5
-                data: extendedData
-
-    scrollHeight = Math.floor(Math.pow(windowHeight, 2) / pageHeight) - 8
-    $scroll.height _.max([scrollHeight, 18]) + "px"
-
-    $container.scroll (e) ->
-        $scroll.css top: Math.round(e.originalEvent.pageY / ((pageHeight - windowHeight)/(windowHeight - $scroll.outerHeight()))) + "px"
-
-    windowWidth = $(window).width()
-    isOpen = false
-
-    $(window).on "mousemove", (e) ->
-        isMouseClose = windowWidth - e.pageX < 150
-        if isMouseClose and not isOpen
-            console.log "open"
-            $scrollBarHolder.animate right: 0
-            isOpen = true
-        if not isMouseClose and isOpen
-            console.log "close"
-            isOpen = false
-            $scrollBarHolder.animate right: "-118px"
-
-    $scrollBar.on "mousedown", (e) ->
-        $(window).scrollTop (e.clientY - $scroll.outerHeight() / 2) * ((pageHeight - windowHeight)/(windowHeight - $scroll.outerHeight()))
-        $scrollBar.on "mousemove", (e) ->
-            $(window).scrollTop (e.clientY - $scroll.outerHeight() / 2) * ((pageHeight - windowHeight)/(windowHeight - $scroll.outerHeight()))
-
-    $(window).on "mouseup", (e) ->
-        $scrollBar.off "mousemove"
-
-    #console.log $ ".content"
-    #$(".content").annotator()
-###
-
+getHost = ->
+    if location.hostname is "fp.dev"
+        "http://localhost:3000"
+    else
+        "http://46.101.153.234:3000"
 class Viewer
 
     constructor: (el = body) ->
         @el = $ el
         @scrollBarHolder = @scrollBar = @scroll = @top = null
-        @host = @getHost()
+        @host = getHost()
         @data = null
         @isOpen = false
         @initWidget()
         @initScroll()
         @initEvents()
-        @heatmap = new LinearHeatmap
+        @heatmap = new LinearHeatmap @scrollBar
         @getData()
         .done =>
             @heatmap.setData @data
@@ -136,12 +63,6 @@ class Viewer
         @scroll = @scrollBarHolder.find ".scroll"
         @el.append @scrollBarHolder
         @setScrollSize()
-
-    getHost: ->
-        if location.hostname is "fp.dev"
-            "http://localhost:3000"
-        else
-            "http://46.101.153.234:3000"
 
     getData: ->
         $.get @host + "/get", (response) =>
@@ -194,16 +115,17 @@ class Viewer
             @scrollBar.on "mousemove", (e) =>
                 @el.scrollTop @getElScrollPosition e.clientY - @top
 
-
 # Inspired by https://github.com/mourner/simpleheat
 class LinearHeatmap
 
-    constructor: (canvas) ->
+    constructor: (holder) ->
+        $holder = $ holder
         canvas = create "canvas"
-        .appendTo ".scrollbar"
-        canvas = $(canvas).get 0
-        @ctx = canvas.getContext "2d"
-        { @width, @height } = canvas
+        .appendTo $holder
+        @canvas = canvas.get 0
+        @ctx = @canvas.getContext "2d"
+        @canvas.width = @width = $holder.width()
+        @canvas.height = @height = $holder.height()
         @data = []
         @stopPoints = []
         @max = 1
@@ -236,11 +158,30 @@ class LinearHeatmap
 
     draw: ->
         do @clear
-        grd = @ctx.createLinearGradient 0, 0, 0, @height
-        _.each @stopPoints, (value, point) =>
-            grd.addColorStop point / @height, @getRGBAColor Math.round value * 255 / @maxStopPoint
-        @ctx.fillStyle = grd
-        @ctx.fillRect 0, 0, @width, @height
+        _.each @data, ({a, b, value}) =>
+            from = Math.round a * @height
+            to = Math.round b * @height
+            length = to - from + 1
+            @ctx.lineWidth = 0.2
+            _.each [from...to], (y) =>
+                k = Math.floor ((y - from) / length) * 100
+                @ctx.globalAlpha = 0.001 * @sampleLine[k][3]
+                @ctx.beginPath()
+                @ctx.moveTo 0, y
+                @ctx.lineTo @width, y
+                @ctx.stroke()
+        grayHeatMap = @ctx.getImageData 0, 0, @width, @height
+        @colorize grayHeatMap.data
+        console.log "done"
+        @ctx.putImageData grayHeatMap, 0, 0
+
+    colorize: (pixels) ->
+        for i in [3...pixels.length] by 4
+            opacity = pixels[i]
+            if opacity
+                pixels[i - 3] = @colorPalette[opacity][0] # r
+                pixels[i - 2] = @colorPalette[opacity][1] # g
+                pixels[i - 1] = @colorPalette[opacity][2] # b
 
     buildColorPalette: ->
         canvas = document.createElement "canvas"
@@ -261,11 +202,11 @@ class LinearHeatmap
         canvas.width = 1
         canvas.height = 100
         ctx.shadowOffsetX = 200
-        ctx.shadowBlur = 15
+        ctx.shadowBlur = 25
         ctx.shadowColor = "black"
 
         ctx.beginPath()
-        ctx.rect -300, 15, 100, 100
+        ctx.rect -300, 15, 100, 50
         ctx.closePath()
         ctx.fill()
         _.map _.chunk ctx.getImageData(0, 0, 1, 100).data, 4
@@ -274,12 +215,13 @@ class LinearHeatmap
 
 class Observer
 
-    constructor: ->
-        body = document.body
-        html = document.documentElement
-        @pageHeight = Math.max body.scrollHeight, body.offsetHeight,
-            html.clientHeight, html.scrollHeight, html.offsetHeight
-        @initEvents()
+    constructor: (el = body) ->
+        @el = $ el
+        { @top } = @el.offset()
+        @host = getHost()
+        setTimeout =>
+            @initEvents()
+        , 1000
 
     data: []
 
@@ -291,22 +233,23 @@ class Observer
         $(window).on "unload", => do @sendData
 
     saveScrollPosition: ->
+        contentHeight = @el.get(0).scrollHeight
         p = @getCurrViewportPosition()
         @data.push
             value: 1
-            a: p.top / @pageHeight
-            b: p.bottom / @pageHeight
+            a: p.top / contentHeight
+            b: p.bottom / contentHeight
 
     getCurrViewportPosition: ->
-        top = window.pageYOffset
-        bottom = top + $(window).height()
+        top = @el.scrollTop()
+        bottom = @el.height() + top
         { top, bottom }
 
     sendData: ->
-        $.post host + "/save",
+        $.post @host + "/save",
             type: "html"
             data: @data
 
 $ ->
-    #new Observer
+    new Observer "#viewerContainer"
     new Viewer "#viewerContainer"
