@@ -122,6 +122,10 @@ do ->
 
         constructor: (el) ->
             @el = $ el
+            @seekHandle = @el.find ".fp-seek-handle"
+            @videoProgress = @el.find ".fp-video-progress"
+            @isSeeking = false
+            @video = $ "video"
             @heatmap = new LinearHeatmap @el
             @heatmap.setData [
                 {
@@ -136,7 +140,47 @@ do ->
                 }
             ]
             @heatmap.draw()
+            @initEvents()
 
+        initEvents: ->
+
+            @video.on "timeupdate", =>
+                return if @isSeeking
+
+                { duration, currentTime } = @video.get 0
+                progressWidth = Math.floor (100 / duration) * currentTime
+                @seekHandle.css "left", progressWidth + "%"
+                @videoProgress.css "width", progressWidth + "%"
+
+            @el.on "click", (e) =>
+                video = @video.get 0
+                point = (e.pageX - @el.offset().left) / @el.width()
+                if video.duration
+                    video.currentTime = video.duration * point
+                else
+                    video.play()
+
+            @seekHandle.on "mousedown", (e) =>
+                @isSeeking = true
+                { clientX, clientY } = e
+                { left } = @seekHandle.offset()
+                @seekHandle.addClass "active"
+                $(window).on "mousemove", (e) =>
+                    @seekHandle.css "left", e.clientX - clientX + left + "px"
+                    @videoProgress.css "width", e.clientX - clientX + left + "px"
+
+                $(window).on "mouseup", (e) =>
+                    $(window).off "mousemove"
+                    $(window).off "mouseup"
+                    @isSeeking = false
+                    video = @video.get 0
+                    @seekHandle.removeClass "active"
+                    point = (@seekHandle.offset().left - @el.offset().left) / @el.width()
+                    console.log point
+                    if video.duration
+                        video.currentTime = video.duration * point
+                    else
+                        video.play()
 
     # Inspired by https://github.com/mourner/simpleheat
     class LinearHeatmap
