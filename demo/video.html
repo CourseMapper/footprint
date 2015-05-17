@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title></title>
   <link rel="stylesheet" href="http://assets.annotateit.org/annotator/v1.1.0/annotator.min.css">
-  <script src="http://localhost:3000/full.footprint.js"></script>
   <style>
     html, body {
       padding: 0;
@@ -27,7 +26,7 @@
   </style>
 </head>
 <body>
-  <video id="video" controls="" preload="none" mediagroup="myVideoGroup" poster="http://media.w3.org/2010/05/sintel/poster.png">
+  <video name="trailer" id="video" controls="" preload="none" mediagroup="myVideoGroup" poster="http://media.w3.org/2010/05/sintel/poster.png">
     <!--
     <source id='mp4'
       src="../sintel/trailer.mp4"
@@ -43,5 +42,11 @@
     <p>Your user agent does not support the HTML5 Video element.</p>
   </video>
 
+  <script src="http://localhost:3000/full.footprint.js"></script>
+  <script>
+    new Footprint({
+      type: "video"
+    });
+  </script>
 </body>
 </html>
