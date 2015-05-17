@@ -1,52 +1,30 @@
 <!DOCTYPE HTML>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title></title>
-  <link rel="stylesheet" href="http://assets.annotateit.org/annotator/v1.1.0/annotator.min.css">
-  <style>
-    html, body {
-      padding: 0;
-      margin: 0;
-    }
-    body {
-      position: relative;
-      padding: 20px;
-    }
-    p {
-      width: 60%;
-    }
-    h1 {
-      margin: 0;
-      line-height: 2em;
-    }
-    canvas {
-      height: 100%;
-    }
-  </style>
-</head>
-<body>
-  <video name="trailer" id="video" controls="" preload="none" mediagroup="myVideoGroup" poster="http://media.w3.org/2010/05/sintel/poster.png">
-    <!--
-    <source id='mp4'
-      src="../sintel/trailer.mp4"
-      type='video/mp4'>
-    <source id='webm'
-      src="../sintel/trailer.webm"
-      type='video/webm'>
-    -->
-    <source id="mp4" src="http://media.w3.org/2010/05/sintel/trailer.mp4" type="video/mp4">
-    <source id="webm" src="http://media.w3.org/2010/05/sintel/trailer.webm" type="video/webm">
-    <source id="ogv" src="http://media.w3.org/2010/05/sintel/trailer.ogv" type="video/ogg">
+  <head>
+    <meta charset="UTF-8">
+    <title>Video Demo</title>
+    <style>
+      .video-heatmap {
+        height: 7px;
+        width: 854px;
+        background-color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="video-heatmap"></div>
+    <video name="trailer" id="video" controls="" preload="none" mediagroup="myVideoGroup" poster="http://media.w3.org/2010/05/sintel/poster.png">
+      <source id="mp4" src="http://media.w3.org/2010/05/sintel/trailer.mp4" type="video/mp4">
+      <source id="webm" src="http://media.w3.org/2010/05/sintel/trailer.webm" type="video/webm">
+      <source id="ogv" src="http://media.w3.org/2010/05/sintel/trailer.ogv" type="video/ogg">
+      <p>Your user agent does not support the HTML5 Video element.</p>
+    </video>
 
-    <p>Your user agent does not support the HTML5 Video element.</p>
-  </video>
-
-  <script src="http://localhost:3000/full.footprint.js"></script>
-  <script>
-    new Footprint({
-      type: "video"
-    });
-  </script>
-</body>
+    <script src="http://localhost:3000/full.footprint.js"></script>
+    <script>
+      new Footprint({
+        type: "video"
+      });
+    </script>
+  </body>
 </html>

@@ -1,4 +1,5 @@
 do ->
+
     create = (tag) -> $ "<#{tag}></#{tag}>"
 
     buildWidget = ->
@@ -31,7 +32,6 @@ do ->
                     width: "100%"
                     pointerEvents: "none"
             )
-
 
     getHost = ->
         if location.hostname is "fp.dev"
@@ -117,6 +117,12 @@ do ->
                 @el.scrollTop @getElScrollPosition e.clientY - @top
                 @scrollBar.on "mousemove", (e) =>
                     @el.scrollTop @getElScrollPosition e.clientY - @top
+
+    class VideoViewer
+
+        constructor: (el) ->
+
+
 
     # Inspired by https://github.com/mourner/simpleheat
     class LinearHeatmap
@@ -232,17 +238,23 @@ do ->
             { top, bottom }
 
         sendData: ->
+            ###
             $.post @host + "/save",
                 type: "html"
                 data: @data
+            ###
 
-    class Footprint
+    window.Footprint = (options = {}) ->
 
-        constructor: (options = {}) ->
+        typeMap =
+            pdf: -> $ "#viewerContainer"
+            html: -> $ "body"
+            video: -> $ "video"
 
-        getContainerByType: (type) ->
-            do {
-                pdf: -> $ "#viewerContainer"
-                html: -> $ "body"
-                video: -> $ "video"
-            }[type]
+        if container = options.container
+            $container = $ container
+        else
+            $container = typeMap[options.type or "html"]?()
+
+        #new Viewer $container
+        #new Observer $container
