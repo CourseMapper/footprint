@@ -121,7 +121,21 @@ do ->
     class VideoViewer
 
         constructor: (el) ->
-
+            @el = $ el
+            @heatmap = new LinearHeatmap @el
+            @heatmap.setData [
+                {
+                    a: 0.1
+                    b: 0.5
+                    value: 1
+                }
+                {
+                    a: 0.7
+                    b: 0.9
+                    value: 1
+                }
+            ]
+            @heatmap.draw()
 
 
     # Inspired by https://github.com/mourner/simpleheat
@@ -135,6 +149,7 @@ do ->
             @ctx = @canvas.getContext "2d"
             @canvas.width = @width = $holder.width()
             @canvas.height = @height = $holder.height()
+            @isLandscape = @width > @height
             @data = []
             @stopPoints = []
             @max = 1
@@ -166,20 +181,33 @@ do ->
 
         draw: ->
             do @clear
+            heatmapLength = Math.max @width, @height
             _.each @data, ({a, b, value}) =>
-                from = Math.round a * @height
-                to = Math.round b * @height
+                from = Math.round a * heatmapLength
+                to = Math.round b * heatmapLength
                 length = to - from + 1
-                @ctx.globalAlpha = 0.1
-                grd = @ctx.createLinearGradient 0, 0, 0, length
+                @ctx.globalAlpha = 1
+
                 @ctx.save()
-                @ctx.translate 0, from
+
+                if @isLandscape
+                    grd = @ctx.createLinearGradient 0, 0, length, 0
+                    @ctx.translate from, 0
+                else
+                    grd = @ctx.createLinearGradient 0, 0, 0, length
+                    @ctx.translate 0, from
+
                 grd.addColorStop 0, "transparent"
                 grd.addColorStop 0.2, "black"
                 grd.addColorStop 0.8, "black"
                 grd.addColorStop 1, "transparent"
                 @ctx.fillStyle = grd
-                @ctx.fillRect 0, 0, @width, length
+
+                if @isLandscape
+                    @ctx.fillRect 0, 0, length, @height
+                else
+                    @ctx.fillRect 0, 0, @width, length
+
                 @ctx.restore()
             grayHeatMap = @ctx.getImageData 0, 0, @width, @height
             @colorize grayHeatMap.data
@@ -256,5 +284,6 @@ do ->
         else
             $container = typeMap[options.type or "html"]?()
 
+        new VideoViewer ".fp-video-heatmap"
         #new Viewer $container
         #new Observer $container

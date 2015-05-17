@@ -4,15 +4,52 @@
     <meta charset="UTF-8">
     <title>Video Demo</title>
     <style>
-      .video-heatmap {
-        height: 7px;
+      .fp-video-heatmap {
+        height: 8px;
         width: 854px;
-        background-color: red;
+        position: relative;
+        background-color: black;
       }
+      .fp-seek-handle {
+        width: 4px;
+        height: 8px;
+        margin-left: -2px;
+        background-color: white;
+        left: 50%;
+        position: absolute;
+        transition: all .2s ease;
+        z-index: 10;
+        cursor: pointer;
+      }
+      .fp-seek-handle:hover {
+        border-radius: 50%;
+        width: 12px;
+        height: 12px;
+        margin-top: -2px;
+        margin-left: -6px;
+        box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+      }
+      .fp-video-progress {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 50%;
+        background-color: rgba(255, 255, 255, 0.5);
+      }
+      canvas {
+        position: absolute;
+      }
+
     </style>
   </head>
   <body>
-    <div class="video-heatmap"></div>
+    <div class="fp-video-heatmap">
+      <div class="fp-seek-handle">
+      </div>
+      <div class="fp-video-progress">
+      </div>
+    </div>
     <video name="trailer" id="video" controls="" preload="none" mediagroup="myVideoGroup" poster="http://media.w3.org/2010/05/sintel/poster.png">
       <source id="mp4" src="http://media.w3.org/2010/05/sintel/trailer.mp4" type="video/mp4">
       <source id="webm" src="http://media.w3.org/2010/05/sintel/trailer.webm" type="video/webm">
