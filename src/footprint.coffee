@@ -126,21 +126,18 @@ do ->
             @videoProgress = @el.find ".fp-video-progress"
             @isSeeking = false
             @video = $ "video"
+            @host = getHost()
             @heatmap = new LinearHeatmap @el
-            @heatmap.setData [
-                {
-                    a: 0.1
-                    b: 0.5
-                    value: 1
-                }
-                {
-                    a: 0.7
-                    b: 0.9
-                    value: 1
-                }
-            ]
-            @heatmap.draw()
+            @getData()
+            .done =>
+                @heatmap.setData @data
+                @heatmap.draw()
             @initEvents()
+
+        getData: ->
+            { currentSrc } = @video.get 0
+            $.get @host + "/get?videoSrc=#{currentSrc}", (response) =>
+                @data = _.first(response.result)?.data
 
         initEvents: ->
 
@@ -211,7 +208,7 @@ do ->
         clear: -> @ctx.clearRect 0, 0, @width, @height
 
         setData: (@data) ->
-            do @prepareData
+            #do @prepareData
             @
 
         prepareData: ->
@@ -316,6 +313,48 @@ do ->
                 data: @data
             ###
 
+    class VideoObserver
+
+        constructor: (el) ->
+            @el = $ el
+            @host = getHost()
+            @initEvents()
+
+        data: []
+
+        initEvents: ->
+            video = @el.get 0
+            interval = start = end = prev = null
+
+            @el.on "playing", =>
+                start = video.currentTime / video.duration
+                interval =
+                    a: start
+                    b: start
+                    value: 1
+                @data.push interval
+
+            @el.on "timeupdate", ->
+                if start >= 0 and end > start
+                    interval.b = end
+                end = prev
+                prev = video.currentTime / video.duration
+
+            @el.on "pause", ->
+                if start >= 0 and end > start
+                    interval.b = end
+                    start = end = null
+
+            $(window).on "unload", =>
+                @el.get(0).pause()
+                @sendData()
+
+        sendData: ->
+            { currentSrc } = @el.get 0
+            $.post @host + "/save?videoSrc=#{currentSrc}",
+                type: "html"
+                data: @data
+
     window.Footprint = (options = {}) ->
 
         typeMap =
@@ -329,5 +368,6 @@ do ->
             $container = typeMap[options.type or "html"]?()
 
         new VideoViewer ".fp-video-heatmap"
+        new VideoObserver "video"
         #new Viewer $container
         #new Observer $container
