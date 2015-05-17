@@ -227,7 +227,7 @@ do ->
                 from = Math.round a * heatmapLength
                 to = Math.round b * heatmapLength
                 length = to - from + 1
-                @ctx.globalAlpha = 1
+                @ctx.globalAlpha = 0.1
 
                 @ctx.save()
 
