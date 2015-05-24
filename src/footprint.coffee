@@ -294,7 +294,7 @@ do ->
             for {a, b, value} in @data
                 from = Math.round a * length
                 to = Math.round b * length
-                flatData[i] += value for i in [from...to]
+                flatData[i] += +value for i in [from..to]
 
             prevValue = obj = null
             preparedData = []

@@ -33,6 +33,30 @@ app.use cors
 
 app.use serveStatic "./dist"
 
+
+prepareData = (data, length = 10000) ->
+    flatData = new Array length
+    flatData[i] = 0 for i in [0...length]
+
+    for {a, b, value} in data
+        from = Math.round a * length
+        to = Math.round b * length
+        flatData[i] += +value for i in [from..to]
+
+    prevValue = obj = null
+    preparedData = []
+    for value, index in flatData
+        if value isnt prevValue
+            if prevValue
+                obj.b = (index - 1)/length
+                preparedData.push obj
+            obj = {
+                a: index/length
+                value
+            }
+            prevValue = value
+    preparedData
+
 app.get "/get", (req, res) ->
     { videoSrc } = req.query
     searchObj =
@@ -66,7 +90,7 @@ app.post "/save", (req, res, next) ->
         if result.length is 1
             p = result[0]
             if data.data
-                p.data = p.data.concat data.data
+                p.data = prepareData p.data.concat data.data
         p.save (err) ->
             res.json
                 code: 200
