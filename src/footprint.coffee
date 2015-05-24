@@ -56,6 +56,7 @@ do ->
                 @heatmap.setData @data
                 @heatmap.draw()
 
+
         initWidget: ->
             { @top } = @el.offset()
             contentHeight = @el.get(0).scrollHeight
@@ -274,26 +275,58 @@ do ->
             ctx.fillRect 0, 0, 1, paletteLength
             _.chunk ctx.getImageData(0, 0, 1, paletteLength).data, 4
 
-    class Observer
+    class GenericObserver
 
-        constructor: (el = body) ->
-            @el = $ el
-            { @top } = @el.offset()
+        constructor: (@type = "html")->
             @host = getHost()
-            setTimeout =>
-                @initEvents()
-            , 1000
+            @data = []
+            $(window).on "unload", =>
+                @data = @prepareData()
+                @sendData()
 
-        data: []
+
+        prepareData: (length = 10000) ->
+            flatData = new Array length
+            flatData[i] = 0 for i in [0...length]
+
+            for {a, b, value} in @data
+                from = Math.round a * length
+                to = Math.round b * length
+                flatData[i] += value for i in [from...to]
+
+            prevValue = obj = null
+            preparedData = []
+            for value, index in flatData
+                if value isnt prevValue
+                    if prevValue
+                        obj.b = (index - 1)/length
+                        preparedData.push obj
+                    obj = {
+                        a: index/length
+                        value
+                    }
+                    prevValue = value
+
+            preparedData
+
+        sendData: ->
+            $.post @host + "/save",
+                data: @data
+                type: @type
+
+    class HtmlObserver extends GenericObserver
+
+        constructor: (el = body, type) ->
+            @el = $ el
+            @initEvents()
+            super type
 
         initEvents: ->
-            @tock = new Tock
-                interval: 1000
-                callback: @saveScrollPosition.bind @
-            .start()
-            $(window).on "unload", => do @sendData
+            setInterval =>
+                @saveState()
+            , 1000
 
-        saveScrollPosition: ->
+        saveState: ->
             contentHeight = @el.get(0).scrollHeight
             p = @getCurrViewportPosition()
             @data.push
@@ -306,21 +339,14 @@ do ->
             bottom = @el.height() + top
             { top, bottom }
 
-        sendData: ->
-            $.post @host + "/save",
-                type: "html"
-                data: @data
-
-    class VideoObserver
+    class VideoObserver extends GenericObserver
 
         constructor: (el) ->
             @el = $ el
-            @host = getHost()
-            @initEvents()
+            @initPlayerEvents()
+            super "video"
 
-        data: []
-
-        initEvents: ->
+        initPlayerEvents: ->
             video = @el.get 0
             interval = start = end = prev = null
 
@@ -345,12 +371,11 @@ do ->
 
             $(window).on "unload", =>
                 @el.get(0).pause()
-                @sendData()
 
         sendData: ->
             { currentSrc } = @el.get 0
             $.post @host + "/save?videoSrc=#{currentSrc}",
-                type: "html"
+                type: @type
                 data: @data
 
     window.Footprint = (options = {}) ->
@@ -359,11 +384,11 @@ do ->
             pdf: ->
                 $container = $ options.container or "#viewerContainer"
                 new Viewer $container
-                new Observer $container
+                new HtmlObserver $container, "pdf"
             html: ->
                 $container = $ options.container or "body"
                 new Viewer $container
-                new Observer $container
+                new HtmlObserver $container, "html"
             video: ->
                 $container = $ options.container or "video"
                 new VideoViewer ".fp-video-heatmap"
