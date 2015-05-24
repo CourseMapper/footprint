@@ -280,10 +280,12 @@ do ->
         constructor: (@type = "html")->
             @host = getHost()
             @data = []
+            @initEvents()
+
+        initEvents: ->
             $(window).on "unload", =>
                 @data = @prepareData()
                 @sendData()
-
 
         prepareData: (length = 10000) ->
             flatData = new Array length
@@ -318,13 +320,13 @@ do ->
 
         constructor: (el = body, type) ->
             @el = $ el
-            @initEvents()
             super type
 
         initEvents: ->
             setInterval =>
                 @saveState()
             , 1000
+            super()
 
         saveState: ->
             contentHeight = @el.get(0).scrollHeight
@@ -343,10 +345,9 @@ do ->
 
         constructor: (el) ->
             @el = $ el
-            @initPlayerEvents()
             super "video"
 
-        initPlayerEvents: ->
+        initEvents: ->
             video = @el.get 0
             interval = start = end = prev = null
 
@@ -371,6 +372,8 @@ do ->
 
             $(window).on "unload", =>
                 @el.get(0).pause()
+                @data = @prepareData()
+                @sendData()
 
         sendData: ->
             { currentSrc } = @el.get 0
