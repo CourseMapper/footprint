@@ -307,11 +307,9 @@ do ->
             { top, bottom }
 
         sendData: ->
-            ###
             $.post @host + "/save",
                 type: "html"
                 data: @data
-            ###
 
     class VideoObserver
 
@@ -358,16 +356,17 @@ do ->
     window.Footprint = (options = {}) ->
 
         typeMap =
-            pdf: -> $ "#viewerContainer"
-            html: -> $ "body"
-            video: -> $ "video"
+            pdf: ->
+                $container = $ options.container or "#viewerContainer"
+                new Viewer $container
+                new Observer $container
+            html: ->
+                $container = $ options.container or "body"
+                new Viewer $container
+                new Observer $container
+            video: ->
+                $container = $ options.container or "video"
+                new VideoViewer ".fp-video-heatmap"
+                new VideoObserver "video"
 
-        if container = options.container
-            $container = $ container
-        else
-            $container = typeMap[options.type or "html"]?()
-
-        new VideoViewer ".fp-video-heatmap"
-        new VideoObserver "video"
-        #new Viewer $container
-        #new Observer $container
+        $ -> typeMap[options.type or "html"]?()
