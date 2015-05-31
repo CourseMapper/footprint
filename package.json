@@ -23,7 +23,9 @@
     "gulp-nodemon": "^1.0.4",
     "serve-static": "^1.6.4",
     "body-parser": "^1.10.1",
-    "express-cors": "0.0.3"
+    "express-cors": "0.0.3",
+    "jquery": "^2.1.4",
+    "jquery-mousewheel": "^3.1.12"
   },
   "devDependencies": {
     "gulp": "^3.8.8",
@@ -34,6 +36,8 @@
     "gulp-uglify": "^1.2.0",
     "require-less": "0.0.7",
     "gulp-rename": "^1.2.2",
-    "coffeeify": "^1.1.0"
+    "coffeeify": "^1.1.0",
+    "node-lessify": "0.0.10",
+    "jadeify": "^4.3.0"
   }
 }
