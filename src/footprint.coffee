@@ -199,8 +199,7 @@ do ->
                 from = Math.round a * heatmapLength
                 to = Math.round b * heatmapLength
                 length = to - from + 1
-                @ctx.globalAlpha = 1
-                #@ctx.globalAlpha = 0.1
+                @ctx.globalAlpha = 0.001 * value
 
                 @ctx.save()
 
@@ -293,6 +292,12 @@ do ->
 
             preparedData
 
+        getDocHeight: ->
+            d = document
+            Math.max d.body.scrollHeight, d.documentElement.scrollHeight,
+                d.body.offsetHeight, d.documentElement.offsetHeight,
+                d.body.clientHeight, d.documentElement.clientHeight
+
         sendData: ->
             $.post @host + "/save",
                 data: @data
@@ -311,7 +316,7 @@ do ->
             super()
 
         saveState: ->
-            contentHeight = @el.get(0).scrollHeight
+            contentHeight = @el.get(0).scrollHeight or @getDocHeight()
             p = @getCurrViewportPosition()
             @data.push
                 value: 1
@@ -371,9 +376,9 @@ do ->
                 new Viewer $container
                 new HtmlObserver $container, "pdf"
             html: ->
-                $container = $ options.container or "body"
+                $container = $ options.container or window
                 new Viewer
-                new HtmlObserver $container, "html"
+                new HtmlObserver window, "html"
             video: ->
                 $container = $ options.container or "video"
                 new VideoViewer "video"
