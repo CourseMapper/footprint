@@ -8,7 +8,7 @@ do ->
         if location.hostname is "fp.dev"
             "http://localhost:3000"
         else
-            "http://46.101.153.234:3000"
+            "http://46.101.153.234:8080"
 
     class Viewer
 
