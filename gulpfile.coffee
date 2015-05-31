@@ -2,13 +2,17 @@ gulp = require "gulp"
 jshint = require "gulp-jshint"
 nodemon = require "gulp-nodemon"
 less = require "require-less"
+rename = require "gulp-rename"
 browserify = require "gulp-browserify"
+uglify = require "gulp-uglify"
 
 gulp.task "build", ->
     gulp.src "./src/*.coffee", read: false
         .pipe browserify
             transform: ["coffeeify", "node-lessify", "jadeify"]
             extensions: [".coffee"]
+        .pipe uglify()
+        .pipe rename "footprint.js"
         .pipe gulp.dest "./dist/"
 
 gulp.task "lint", ->

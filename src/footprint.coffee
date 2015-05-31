@@ -1,5 +1,5 @@
-require "jquery"
-require "lodash"
+$ = require "jquery"
+_ = require "lodash"
 require "jquery-mousewheel"
 require "./styles.less"
 require "./scroll.jade"
