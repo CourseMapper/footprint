@@ -18,10 +18,6 @@ plan.remote (remote) ->
         remote.log "Install dependencies"
 
         remote.exec "npm install"
-        remote.exec "bower install --allow-root"
-
-        remote.log "build coffee"
-        remote.exec "gulp coffee"
 
         remote.log "build app"
         remote.exec "gulp build"
