@@ -1,5 +1,4 @@
 $ = require "jquery"
-_ = require "lodash"
 require "jquery-mousewheel"
 require "./styles.less"
 
@@ -44,12 +43,12 @@ do ->
 
         getData: ->
             $.get @host + "/get", (response) =>
-                @data = _.first(response.result)?.data
+                @data = response.result?[0]?.data
 
         setScrollSize: ->
             contentHeight = @el.get(0).scrollHeight
             scrollHeight = Math.floor(Math.pow(@scrollBarHolder.height(), 2) / contentHeight) - 12
-            @scroll.height _.max([scrollHeight, 18]) + "px"
+            @scroll.height Math.max(scrollHeight, 18) + "px"
 
         initScroll: ->
             docHeight = @getDocHeight()
@@ -121,7 +120,7 @@ do ->
         getData: ->
             { currentSrc } = @video.get 0
             $.get @host + "/get?videoSrc=#{currentSrc}", (response) =>
-                @data = _.first(response.result)?.data
+                @data = response.result?[0]?.data
 
         initEvents: ->
 
@@ -190,27 +189,17 @@ do ->
 
         clear: -> @ctx.clearRect 0, 0, @width, @height
 
-        setData: (@data) ->
-            #do @prepareData
-            @
-
-        prepareData: ->
-            @stopPoints = new Array @height
-            _.fill @stopPoints, 0
-            _.each @data, ({a, b, value}) =>
-                from = Math.round a * @height
-                to = Math.round b * @height
-                @stopPoints[i] += value for i in [from...to]
-            @maxStopPoint = _.max @stopPoints.concat [@defaultMaxStopPoint]
+        setData: (@data) -> @
 
         draw: ->
             do @clear
             heatmapLength = Math.max @width, @height
-            _.each @data, ({a, b, value}) =>
+            for {a, b, value} in @data
                 from = Math.round a * heatmapLength
                 to = Math.round b * heatmapLength
                 length = to - from + 1
-                @ctx.globalAlpha = 0.1
+                @ctx.globalAlpha = 1
+                #@ctx.globalAlpha = 0.1
 
                 @ctx.save()
 
@@ -252,10 +241,20 @@ do ->
             grd = ctx.createLinearGradient 0, 0, 0, paletteLength
             canvas.width = 1
             canvas.height = paletteLength
-            _.forIn (_.invert @defaultGradient), grd.addColorStop.bind grd
+            for stopPoint, color of @defaultGradient
+                grd.addColorStop stopPoint, color
             ctx.fillStyle = grd
             ctx.fillRect 0, 0, 1, paletteLength
-            _.chunk ctx.getImageData(0, 0, 1, paletteLength).data, 4
+            imageData = ctx.getImageData(0, 0, 1, paletteLength).data
+            palette = []
+            for color, i in imageData by 4
+                palette.push [
+                    imageData[i]
+                    imageData[i + 1]
+                    imageData[i + 2]
+                    imageData[i + 3]
+                ]
+            palette
 
     class GenericObserver
 
