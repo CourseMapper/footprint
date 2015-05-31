@@ -19,8 +19,10 @@ do ->
             @host = getHost()
             @data = null
             @isOpen = false
+            @docHeight = @getDocHeight()
             @initWidget()
-            @initScroll()
+            @setScrollPosition()
+            @scrollEl.scroll => @setScrollPosition()
             @initEvents()
             @heatmap = new LinearHeatmap @scrollBar
             @getData()
@@ -50,19 +52,17 @@ do ->
             scrollHeight = Math.floor(Math.pow(@scrollBarHolder.height(), 2) / contentHeight) - 12
             @scroll.height Math.max(scrollHeight, 18) + "px"
 
-        initScroll: ->
-            docHeight = @getDocHeight()
-            @scrollEl.scroll =>
-                @setScrollSize()
-                scrollHeight = @scroll.outerHeight()
-                contentHeight = @scrollEl.get(0).scrollHeight or docHeight
-                windowHeight = @scrollBarHolder.height()
-                top = @scrollEl.scrollTop()
+        setScrollPosition: ->
+            @setScrollSize()
+            scrollHeight = @scroll.outerHeight()
+            contentHeight = @scrollEl.get(0).scrollHeight or @docHeight
+            windowHeight = @scrollBarHolder.height()
+            top = @scrollEl.scrollTop()
 
-                top = top / ((contentHeight - windowHeight) / (windowHeight - scrollHeight))
-                top = Math.round top
-                top += "px"
-                @scroll.css { top }
+            top = top / ((contentHeight - windowHeight) / (windowHeight - scrollHeight))
+            top = Math.round top
+            top += "px"
+            @scroll.css { top }
 
         getDocHeight: ->
             d = document
@@ -71,8 +71,9 @@ do ->
                 d.body.clientHeight, d.documentElement.clientHeight
 
         getElScrollPosition: (clientY) ->
+            docHeight = @getDocHeight()
             windowHeight = @scrollBarHolder.height()
-            contentHeight = @el.get(0).scrollHeight
+            contentHeight = @el.get(0).scrollHeight or @docHeight
             (clientY - @scroll.outerHeight() / 2) * ((contentHeight - windowHeight)/(windowHeight - @scroll.outerHeight()))
 
         initEvents: ->
@@ -90,14 +91,14 @@ do ->
                     @scrollBar.off "mousemove"
 
             @scrollBarHolder.on "mousewheel", (e) =>
-                @el.scrollTop()
-                @el.scrollTop @el.scrollTop() - e.deltaY
+                @scrollEl.scrollTop()
+                @scrollEl.scrollTop @scrollEl.scrollTop() - e.deltaY
                 true
 
             @scrollBar.on "mousedown", (e) =>
-                @el.scrollTop @getElScrollPosition e.clientY - @top
+                @scrollEl.scrollTop @getElScrollPosition e.clientY - @top
                 @scrollBar.on "mousemove", (e) =>
-                    @el.scrollTop @getElScrollPosition e.clientY - @top
+                    @scrollEl.scrollTop @getElScrollPosition e.clientY - @top
 
     class VideoViewer
 
