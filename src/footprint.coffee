@@ -13,8 +13,9 @@ do ->
 
     class Viewer
 
-        constructor: (el = body) ->
-            @el = $ el
+        constructor: (el, scrollEl) ->
+            @el = $ el or "body"
+            @scrollEl = $ scrollEl or el or window
             @scrollBarHolder = @scrollBar = @scroll = @top = null
             @host = getHost()
             @data = null
@@ -51,17 +52,24 @@ do ->
             @scroll.height _.max([scrollHeight, 18]) + "px"
 
         initScroll: ->
-            @el.scroll =>
+            docHeight = @getDocHeight()
+            @scrollEl.scroll =>
                 @setScrollSize()
                 scrollHeight = @scroll.outerHeight()
-                contentHeight = @el.get(0).scrollHeight
+                contentHeight = @scrollEl.get(0).scrollHeight or docHeight
                 windowHeight = @scrollBarHolder.height()
-                top = @el.scrollTop()
+                top = @scrollEl.scrollTop()
 
                 top = top / ((contentHeight - windowHeight) / (windowHeight - scrollHeight))
                 top = Math.round top
                 top += "px"
                 @scroll.css { top }
+
+        getDocHeight: ->
+            d = document
+            Math.max d.body.scrollHeight, d.documentElement.scrollHeight,
+                d.body.offsetHeight, d.documentElement.offsetHeight,
+                d.body.clientHeight, d.documentElement.clientHeight
 
         getElScrollPosition: (clientY) ->
             windowHeight = @scrollBarHolder.height()
@@ -69,7 +77,7 @@ do ->
             (clientY - @scroll.outerHeight() / 2) * ((contentHeight - windowHeight)/(windowHeight - @scroll.outerHeight()))
 
         initEvents: ->
-            $(window)
+            @scrollEl
                 .on "resize", => @setScrollSize()
                 .on "mousemove", (e) =>
                     isMouseClose = $(window).width() - e.pageX < 50
@@ -159,7 +167,7 @@ do ->
 
         constructor: (holder) ->
             $holder = $ holder
-            canvas = create "canvas"
+            canvas = $ "<canvas></canvas>"
             .appendTo $holder
             @canvas = canvas.get 0
             @ctx = @canvas.getContext "2d"
@@ -364,7 +372,7 @@ do ->
                 new HtmlObserver $container, "pdf"
             html: ->
                 $container = $ options.container or "body"
-                new Viewer $container
+                new Viewer
                 new HtmlObserver $container, "html"
             video: ->
                 $container = $ options.container or "video"
