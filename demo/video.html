@@ -3,50 +3,6 @@
   <head>
     <meta charset="UTF-8">
     <title>Video Demo</title>
-    <style>
-      .fp-video-heatmap {
-        height: 8px;
-        width: 854px;
-        position: relative;
-        background-color: black;
-      }
-      .fp-seek-handle {
-        width: 4px;
-        height: 8px;
-        margin-left: -2px;
-        background-color: white;
-        left: 0%;
-        position: absolute;
-        transition: left .5s linear;
-        z-index: 10;
-        cursor: pointer;
-      }
-      .fp-video-heatmap:hover .fp-seek-handle, .fp-seek-handle.active {
-        border-radius: 50%;
-        width: 12px;
-        height: 12px;
-        margin-top: -2px;
-        margin-left: -6px;
-        box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
-      }
-      .fp-seek-handle.active {
-        transition: none;
-      }
-      .fp-video-progress {
-        position: absolute;
-        z-index: 9;
-        left: 0;
-        transition: all .5s linear;
-        top: 0;
-        bottom: 0;
-        width: 0%;
-        background-color: rgba(255, 255, 255, 0.5);
-      }
-      canvas {
-        position: absolute;
-      }
-
-    </style>
   </head>
   <body>
     <video id="video" controls="" preload="none" mediagroup="myVideoGroup" poster="http://media.w3.org/2010/05/sintel/poster.png">
