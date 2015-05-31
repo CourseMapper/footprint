@@ -1,3 +1,9 @@
+require "jquery"
+require "lodash"
+require "jquery-mousewheel"
+require "./styles.less"
+require "./scroll.jade"
+
 do ->
 
     create = (tag) -> $ "<#{tag}></#{tag}>"
