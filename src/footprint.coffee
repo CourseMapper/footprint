@@ -2,42 +2,8 @@ $ = require "jquery"
 _ = require "lodash"
 require "jquery-mousewheel"
 require "./styles.less"
-require "./scroll.jade"
 
 do ->
-
-    create = (tag) -> $ "<#{tag}></#{tag}>"
-
-    buildWidget = ->
-        create "div"
-        .addClass "scrollbar-holder"
-        .css
-            position: "fixed"
-            zIndex: 99999
-            width: "50px"
-            right: "-38px"
-            top: 0
-            bottom: 0
-            backgroundColor: "#333"
-        .append (create "div"
-                .addClass "scrollbar"
-                .css
-                    width: "100%"
-                    height: "100%"
-            ),
-            (create "div"
-                .addClass "scroll"
-                .css
-                    height: "100px"
-                    borderTop: "4px solid #EEE"
-                    borderBottom: "4px solid #EEE"
-                    position: "absolute"
-                    backgroundColor: "rgba(255,255,255,0.05)"
-                    top: 0
-                    right: 0
-                    width: "100%"
-                    pointerEvents: "none"
-            )
 
     getHost = ->
         if location.hostname is "fp.dev"
@@ -64,13 +30,14 @@ do ->
 
 
         initWidget: ->
+            tpl = require "./scroll.jade"
             { @top } = @el.offset()
             contentHeight = @el.get(0).scrollHeight
 
-            @scrollBarHolder = buildWidget()
+            @scrollBarHolder = $ tpl()
             @scrollBarHolder.css top: @top
-            @scrollBar = @scrollBarHolder.find ".scrollbar"
-            @scroll = @scrollBarHolder.find ".scroll"
+            @scrollBar = @scrollBarHolder.find ".fp-scrollbar"
+            @scroll = @scrollBarHolder.find ".fp-scroll"
             @el.append @scrollBarHolder
             @setScrollSize()
 
@@ -127,12 +94,14 @@ do ->
 
     class VideoViewer
 
-        constructor: (el) ->
-            @el = $ el
+        constructor: (video) ->
+            tpl = require "./slider.jade"
+            @el = $ tpl()
             @seekHandle = @el.find ".fp-seek-handle"
             @videoProgress = @el.find ".fp-video-progress"
             @isSeeking = false
-            @video = $ "video"
+            @video = $ video
+            @el.insertBefore @video
             @host = getHost()
             @heatmap = new LinearHeatmap @el
             @getData()
@@ -180,7 +149,6 @@ do ->
                     video = @video.get 0
                     @seekHandle.removeClass "active"
                     point = (@seekHandle.offset().left - @el.offset().left) / @el.width()
-                    console.log point
                     if video.duration
                         video.currentTime = video.duration * point
                     else
@@ -400,7 +368,7 @@ do ->
                 new HtmlObserver $container, "html"
             video: ->
                 $container = $ options.container or "video"
-                new VideoViewer ".fp-video-heatmap"
+                new VideoViewer "video"
                 new VideoObserver "video"
 
         $ -> typeMap[options.type or "html"]?()
