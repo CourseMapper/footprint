@@ -26,10 +26,10 @@ do ->
             @initEvents()
             @heatmap = new LinearHeatmap @scrollBar
             @getData()
-            .done =>
+            .done (response) =>
                 @heatmap.setData @data
-                @heatmap.draw()
-
+                    .setMaxValue response.result?.maxValue
+                    .draw()
 
         initWidget: ->
             tpl = require "./scroll.jade"
@@ -45,7 +45,7 @@ do ->
 
         getData: ->
             $.get @host + "/get", (response) =>
-                @data = response.result?[0]?.data
+                @data = response.result?.data
 
         setScrollSize: ->
             contentHeight = @el.get(0).scrollHeight
@@ -121,7 +121,7 @@ do ->
         getData: ->
             { currentSrc } = @video.get 0
             $.get @host + "/get?videoSrc=#{currentSrc}", (response) =>
-                @data = response.result?[0]?.data
+                @data = response.result?.data
 
         initEvents: ->
 
@@ -176,7 +176,7 @@ do ->
             @isLandscape = @width > @height
             @data = []
             @stopPoints = []
-            @max = 1
+            @max = 10
             @colorPalette = do @buildColorPalette
 
         defaultMaxStopPoint: 100
@@ -190,6 +190,10 @@ do ->
 
         clear: -> @ctx.clearRect 0, 0, @width, @height
 
+        setMaxValue: (maxValue) ->
+            @max = Math.max @max, +maxValue
+            @
+
         setData: (@data) -> @
 
         draw: ->
@@ -199,7 +203,7 @@ do ->
                 from = Math.round a * heatmapLength
                 to = Math.round b * heatmapLength
                 length = to - from + 1
-                @ctx.globalAlpha = 0.001 * value
+                @ctx.globalAlpha = value / @max
 
                 @ctx.save()
 
@@ -319,7 +323,7 @@ do ->
             contentHeight = @el.get(0).scrollHeight or @getDocHeight()
             p = @getCurrViewportPosition()
             @data.push
-                value: 1
+                value: 0.1
                 a: p.top / contentHeight
                 b: p.bottom / contentHeight
 

@@ -17,8 +17,8 @@ PointSchema = new mongoose.Schema
     url: String
     type: String
     videoSrc: String
+    maxValue: Number
     data: [DataSchema]
-
 
 Point = mongoose.model "Point", PointSchema
 
@@ -38,10 +38,14 @@ prepareData = (data, length = 10000) ->
     flatData = new Array length
     flatData[i] = 0 for i in [0...length]
 
+    maxValue = 0
     for {a, b, value} in data
         from = Math.round a * length
         to = Math.round b * length
-        flatData[i] += +value for i in [from..to]
+        for i in [from..to]
+            flatData[i] += +value
+            if flatData[i] > maxValue
+                maxValue = flatData[i]
 
     prevValue = obj = null
     preparedData = []
@@ -55,7 +59,7 @@ prepareData = (data, length = 10000) ->
                 value
             }
             prevValue = value
-    preparedData
+    { preparedData, maxValue }
 
 app.get "/get", (req, res) ->
     { videoSrc } = req.query
@@ -64,6 +68,7 @@ app.get "/get", (req, res) ->
     if videoSrc
         searchObj.videoSrc = videoSrc
     Point.find searchObj, (err, result) ->
+        result = result[0]
         res.json {
             result
             code: 200
@@ -90,7 +95,9 @@ app.post "/save", (req, res, next) ->
         if result.length is 1
             p = result[0]
             if data.data
-                p.data = prepareData p.data.concat data.data
+                { preparedData, maxValue } = prepareData p.data.concat data.data
+                p.data = preparedData
+                p.maxValue = maxValue
         p.save (err) ->
             res.json
                 code: 200
