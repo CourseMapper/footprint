@@ -6,7 +6,7 @@ do ->
 
     getHost = ->
         if location.hostname is "fp.dev"
-            "http://localhost:3000"
+            "http://localhost:8080"
         else
             "http://46.101.153.234:8080"
 
@@ -109,19 +109,30 @@ do ->
             @videoProgress = @el.find ".fp-video-progress"
             @isSeeking = false
             @video = $ video
-            @el.insertBefore @video
             @host = getHost()
-            @heatmap = new LinearHeatmap @el
-            @getData()
-            .done =>
-                @heatmap.setData @data
-                @heatmap.draw()
-            @initEvents()
+            @el.insertBefore @video
+            setTimeout =>
+                @refreshSize()
+                @heatmap = new LinearHeatmap @el
+                @getData()
+                .done =>
+                    @heatmap.setData @data
+                    @heatmap.draw()
+                @initEvents()
+            , 1000
+            setInterval =>
+                @refreshSize()
+            , 1000
 
         getData: ->
             { currentSrc } = @video.get 0
             $.get @host + "/get?videoSrc=#{currentSrc}", (response) =>
                 @data = response.result?.data
+
+        refreshSize: ->
+            @el.css
+                width: @video.width()
+                opacity: 1
 
         initEvents: ->
 
