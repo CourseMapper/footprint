@@ -88,6 +88,7 @@ do ->
                     if shouldOpen and not @isOpen
                         @scrollBarHolder.animate
                             right: 0
+                        @scrollBtn.animate
                             opacity: 1
                         @scrollBtn.css opacity: 1
                         @isOpen = true
@@ -95,6 +96,7 @@ do ->
                         @isOpen = false
                         @scrollBarHolder.animate
                             right: "-38px"
+                        @scrollBtn.animate
                             opacity: 0
                 .on "mouseup", (e) =>
                     @scrollBar.off "mousemove"
