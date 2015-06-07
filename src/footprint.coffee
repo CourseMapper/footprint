@@ -115,9 +115,10 @@ do ->
                 @refreshSize()
                 @heatmap = new LinearHeatmap @el
                 @getData()
-                .done =>
+                .done (response) =>
                     @heatmap.setData @data
-                    @heatmap.draw()
+                        .setMaxValue response.result?.maxValue
+                        .draw()
                 @initEvents()
             , 1000
             setInterval =>
@@ -213,10 +214,19 @@ do ->
             for {a, b, value} in @data
                 from = Math.round a * heatmapLength
                 to = Math.round b * heatmapLength
-                length = to - from + 1
+                length = to - from
+                delta = heatmapLength * 0.01
+                from = from - delta
+                if from < 0
+                    from = 0
+                to = to + delta
+                if to > heatmapLength
+                    to = heatmapLength
                 @ctx.globalAlpha = value / @max
 
                 @ctx.save()
+
+                length = length + delta * 2
 
                 if @isLandscape
                     grd = @ctx.createLinearGradient 0, 0, length, 0
@@ -283,7 +293,7 @@ do ->
                 @data = @prepareData()
                 @sendData()
 
-        prepareData: (length = 10000) ->
+        prepareData: (length = 100) ->
             flatData = new Array length
             flatData[i] = 0 for i in [0...length]
 
@@ -298,6 +308,7 @@ do ->
                 if value isnt prevValue
                     if prevValue
                         obj.b = (index - 1)/length
+                        obj.length = Math.round (obj.b - obj.a) * length
                         preparedData.push obj
                     obj = {
                         a: index/length
@@ -305,7 +316,39 @@ do ->
                     }
                     prevValue = value
 
-            preparedData
+            optimizedData = []
+
+            index = 0
+            while index < preparedData.length
+                obj = preparedData[index]
+                {a, b, length, value} = obj
+                if length < 3
+                    prev = next = value: Number.POSITIVE_INFINITY
+                    if index < preparedData.length - 1
+                        next = preparedData[index + 1]
+                    if index > 0
+                        prev = preparedData[index - 1]
+
+                    prevDiff = Math.abs prev.value - value
+                    nextDiff = Math.abs next.value - value
+
+                    if prevDiff < nextDiff
+                        prev.b = b
+                        prev.value = Math.round (prev.value + value) / 2
+                        optimizedData.pop()
+                        optimizedData.push prev
+                    else
+                        next.a = a
+                        next.value = Math.round (next.value + value) / 2
+                        optimizedData.push next
+                        index++
+
+                else
+                    optimizedData.push obj
+                index++
+
+
+            optimizedData
 
         getDocHeight: ->
             d = document
@@ -384,6 +427,16 @@ do ->
                 data: @data
 
     window.Footprint = (options = {}) ->
+        host = getHost()
+
+        ###
+        $ ->
+            { currentSrc } = $("video").get 0
+            $.get host + "/get?videoSrc=#{currentSrc}", (response) ->
+                g = new GenericObserver
+                g.data = response.result?.data
+                console.log g.prepareData()
+        ###
 
         typeMap =
             pdf: ->

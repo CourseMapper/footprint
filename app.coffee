@@ -34,7 +34,7 @@ app.use cors
 app.use serveStatic "./dist"
 
 
-prepareData = (data, length = 10000) ->
+prepareData = (data, length = 100) ->
     flatData = new Array length
     flatData[i] = 0 for i in [0...length]
 
@@ -53,13 +53,49 @@ prepareData = (data, length = 10000) ->
         if value isnt prevValue
             if prevValue
                 obj.b = (index - 1)/length
+                obj.length = Math.round (obj.b - obj.a) * length
                 preparedData.push obj
             obj = {
                 a: index/length
                 value
             }
             prevValue = value
-    { preparedData, maxValue }
+
+    optimizedData = []
+
+    console.log "work"
+    index = 0
+    while index < preparedData.length
+        obj = preparedData[index]
+        {a, b, length, value} = obj
+        console.log length
+        if length < 3
+            console.log obj
+            prev = next = value: Number.POSITIVE_INFINITY
+            if index < preparedData.length - 1
+                next = preparedData[index + 1]
+            if index > 0
+                prev = preparedData[index - 1]
+
+            prevDiff = Math.abs prev.value - value
+            nextDiff = Math.abs next.value - value
+
+            if prevDiff < nextDiff
+                prev.b = b
+                prev.value = Math.round (prev.value + value) / 2
+                optimizedData.pop()
+                optimizedData.push prev
+            else
+                next.a = a
+                next.value = Math.round (next.value + value) / 2
+                optimizedData.push next
+                index++
+
+        else
+            optimizedData.push obj
+        index++
+
+    { preparedData: optimizedData, maxValue }
 
 app.get "/get", (req, res) ->
     { videoSrc } = req.query
@@ -94,9 +130,11 @@ app.post "/save", (req, res, next) ->
             console.log "More than one object was found"
         if result.length is 1
             p = result[0]
+            console.log data.data
             if data.data
                 { preparedData, maxValue } = prepareData p.data.concat data.data
                 p.data = preparedData
+                console.log preparedData
                 p.maxValue = maxValue
         p.save (err) ->
             res.json
