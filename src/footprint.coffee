@@ -15,7 +15,7 @@ do ->
         constructor: (el, scrollEl) ->
             @el = $ el or "body"
             @scrollEl = $ scrollEl or el or window
-            @scrollBarHolder = @scrollBar = @scroll = @top = null
+            @scrollBarHolder = @scrollBtn = @scrollBar = @scroll = @top = null
             @host = getHost()
             @data = null
             @isOpen = false
@@ -40,6 +40,7 @@ do ->
             @scrollBarHolder.css top: @top
             @scrollBar = @scrollBarHolder.find ".fp-scrollbar"
             @scroll = @scrollBarHolder.find ".fp-scroll"
+            @scrollBtn = @scrollBarHolder.find ".fp-scroll-btn"
             @el.append @scrollBarHolder
             @setScrollSize()
 
@@ -76,17 +77,25 @@ do ->
             contentHeight = @el.get(0).scrollHeight or @docHeight
             (clientY - @scroll.outerHeight() / 2) * ((contentHeight - windowHeight)/(windowHeight - @scroll.outerHeight()))
 
+        destroy: -> @scrollBarHolder.remove()
+
         initEvents: ->
             @scrollEl
                 .on "resize", => @setScrollSize()
                 .on "mousemove", (e) =>
-                    isMouseClose = $(window).width() - e.pageX < 50
-                    if isMouseClose and not @isOpen
-                        @scrollBarHolder.animate right: 0
+                    shouldOpen = $(window).width() - e.pageX < 20
+                    shouldClose = $(window).width() - e.pageX < 50
+                    if shouldOpen and not @isOpen
+                        @scrollBarHolder.animate
+                            right: 0
+                            opacity: 1
+                        @scrollBtn.css opacity: 1
                         @isOpen = true
-                    if not isMouseClose and @isOpen
+                    if not shouldClose and @isOpen
                         @isOpen = false
-                        @scrollBarHolder.animate right: "-38px"
+                        @scrollBarHolder.animate
+                            right: "-38px"
+                            opacity: 0
                 .on "mouseup", (e) =>
                     @scrollBar.off "mousemove"
 
@@ -99,6 +108,9 @@ do ->
                 @scrollEl.scrollTop @getElScrollPosition e.clientY - @top
                 @scrollBar.on "mousemove", (e) =>
                     @scrollEl.scrollTop @getElScrollPosition e.clientY - @top
+
+            @scrollBtn.on "click", =>
+                @destroy()
 
     class VideoViewer
 
@@ -235,8 +247,11 @@ do ->
                     grd = @ctx.createLinearGradient 0, 0, 0, length
                     @ctx.translate 0, from
 
-                grd.addColorStop 0, "transparent"
-                grd.addColorStop 0.2, "black"
+                if from is 0
+                    grd.addColorStop 0, "black"
+                else
+                    grd.addColorStop 0, "transparent"
+                    grd.addColorStop 0.2, "black"
                 grd.addColorStop 0.8, "black"
                 grd.addColorStop 1, "transparent"
                 @ctx.fillStyle = grd

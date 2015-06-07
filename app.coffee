@@ -63,14 +63,11 @@ prepareData = (data, length = 100) ->
 
     optimizedData = []
 
-    console.log "work"
     index = 0
     while index < preparedData.length
         obj = preparedData[index]
-        {a, b, length, value} = obj
-        console.log length
-        if length < 3
-            console.log obj
+        { a, b, length, value } = obj
+        if length < 2
             prev = next = value: Number.POSITIVE_INFINITY
             if index < preparedData.length - 1
                 next = preparedData[index + 1]
