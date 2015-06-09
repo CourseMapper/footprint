@@ -271,15 +271,15 @@ do ->
             else
                 grd = @ctx.createLinearGradient 0, 0, 0, heatmapLength
             for {a, b, value}, index in @data
-                c = "rgba(0,0,0,#{(value/@max).toFixed 2})"
                 grd.addColorStop a, "rgba(0,0,0,#{(value/@max).toFixed 2})"
                 grd.addColorStop b, "rgba(0,0,0,#{(value/@max).toFixed 2})"
+                if index is @data.length - 1
+                    grd.addColorStop b + 0.01, "rgba(0,0,0,0)"
                 if index < @data.length - 1
                     next = @data[index + 1]
                     nextA = Math.round next.a * 100
                     currB = Math.round b * 100
                     unless currB is nextA - 1
-                        console.log "work"
                         grd.addColorStop (currB + 1)/100, "rgba(0,0,0,0)"
                         grd.addColorStop (nextA - 1)/100, "rgba(0,0,0,0)"
 
