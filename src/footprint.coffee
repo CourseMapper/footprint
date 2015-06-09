@@ -225,7 +225,8 @@ do ->
         draw: ->
             do @clear
             heatmapLength = Math.max @width, @height
-            for {a, b, value} in @data
+            ###
+            for {a, b, value}, index in @data
                 from = Math.round a * heatmapLength
                 to = Math.round b * heatmapLength
                 length = to - from
@@ -264,6 +265,29 @@ do ->
                     @ctx.fillRect 0, 0, @width, length
 
                 @ctx.restore()
+            ###
+            if @isLandscape
+                grd = @ctx.createLinearGradient 0, 0, heatmapLength, 0
+            else
+                grd = @ctx.createLinearGradient 0, 0, 0, heatmapLength
+            for {a, b, value}, index in @data
+                c = "rgba(0,0,0,#{(value/@max).toFixed 2})"
+                grd.addColorStop a, "rgba(0,0,0,#{(value/@max).toFixed 2})"
+                grd.addColorStop b, "rgba(0,0,0,#{(value/@max).toFixed 2})"
+                if index < @data.length - 1
+                    next = @data[index + 1]
+                    nextA = Math.round next.a * 100
+                    currB = Math.round b * 100
+                    unless currB is nextA - 1
+                        console.log "work"
+                        grd.addColorStop (currB + 1)/100, "rgba(0,0,0,0)"
+                        grd.addColorStop (nextA - 1)/100, "rgba(0,0,0,0)"
+
+            @ctx.fillStyle = grd
+            if @isLandscape
+                @ctx.fillRect 0, 0, heatmapLength, @height
+            else
+                @ctx.fillRect 0, 0, @width, heatmapLength
             grayHeatMap = @ctx.getImageData 0, 0, @width, @height
             @colorize grayHeatMap.data
             @ctx.putImageData grayHeatMap, 0, 0
