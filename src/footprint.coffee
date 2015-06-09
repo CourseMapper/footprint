@@ -273,6 +273,8 @@ do ->
             for {a, b, value}, index in @data
                 grd.addColorStop a, "rgba(0,0,0,#{(value/@max).toFixed 2})"
                 grd.addColorStop b, "rgba(0,0,0,#{(value/@max).toFixed 2})"
+                if index is 0 and a isnt 0
+                    grd.addColorStop a - 0.01, "rgba(0,0,0,0)"
                 if index is @data.length - 1
                     grd.addColorStop b + 0.01, "rgba(0,0,0,0)"
                 if index < @data.length - 1
