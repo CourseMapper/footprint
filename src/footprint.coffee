@@ -202,7 +202,7 @@ do ->
             @isLandscape = @width > @height
             @data = []
             @stopPoints = []
-            @max = 10
+            @max = 4
             @colorPalette = do @buildColorPalette
 
         defaultMaxStopPoint: 100
