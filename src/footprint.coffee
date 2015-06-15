@@ -338,6 +338,7 @@ do ->
                 @sendData()
 
         prepareData: (length = 100) ->
+            flatData = []
             flatData = new Array length
             flatData[i] = 0 for i in [0...length]
 
@@ -367,6 +368,7 @@ do ->
                 obj = preparedData[index]
                 {a, b, length, value} = obj
                 if length < 3
+                    ###
                     prev = next = value: Number.POSITIVE_INFINITY
                     if index < preparedData.length - 1
                         next = preparedData[index + 1]
@@ -386,6 +388,7 @@ do ->
                         next.value = Math.round (next.value + value) / 2
                         optimizedData.push next
                         index++
+                    ###
 
                 else
                     optimizedData.push obj
@@ -454,7 +457,7 @@ do ->
                 end = prev
                 prev = video.currentTime / video.duration
 
-            @el.on "pause", ->
+            @el.on "pause", =>
                 if start >= 0 and end > start
                     interval.b = end
                     start = end = null
@@ -469,6 +472,7 @@ do ->
             $.post @host + "/save?videoSrc=#{currentSrc}",
                 type: @type
                 data: @data
+
 
     window.Footprint = (options = {}) ->
         host = getHost()

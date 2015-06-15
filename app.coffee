@@ -68,6 +68,7 @@ prepareData = (data, length = 100) ->
         obj = preparedData[index]
         { a, b, length, value } = obj
         if length < 2
+            ###
             prev = next = value: Number.POSITIVE_INFINITY
             if index < preparedData.length - 1
                 next = preparedData[index + 1]
@@ -88,6 +89,7 @@ prepareData = (data, length = 100) ->
                 optimizedData.push next
                 index++
 
+            ###
         else
             optimizedData.push obj
         index++
