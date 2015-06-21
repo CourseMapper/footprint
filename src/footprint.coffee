@@ -441,26 +441,17 @@ do ->
 
         initEvents: ->
             video = @el.get 0
-            interval = start = end = prev = null
+            start = curr = prev = 0
 
-            @el.on "playing", =>
-                start = video.currentTime / video.duration
-                interval =
-                    a: start
-                    b: start
-                    value: 1
-                @data.push interval
-
-            @el.on "timeupdate", ->
-                if start >= 0 and end > start
-                    interval.b = end
-                end = prev
-                prev = video.currentTime / video.duration
-
-            @el.on "pause", =>
-                if start >= 0 and end > start
-                    interval.b = end
-                    start = end = null
+            @el.on "timeupdate", =>
+                prev = curr
+                curr = video.currentTime
+                if Math.abs(curr - prev) > 1
+                    @data.push
+                        a: (start / video.duration).toFixed 3
+                        b: (prev / video.duration).toFixed 3
+                        value: 1
+                    start = curr
 
             $(window).on "unload", =>
                 @el.get(0).pause()
