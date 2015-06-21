@@ -460,13 +460,14 @@ do ->
                 a: (start / video.duration).toFixed 3
                 b: (end / video.duration).toFixed 3
                 value: 1
-            console.log @data
+            @sendData()
 
         sendData: ->
             { currentSrc } = @el.get 0
             $.post @host + "/save?videoSrc=#{currentSrc}",
                 type: @type
                 data: @data
+            .done => @data = []
 
     window.Footprint = (options = {}) ->
         host = getHost()
