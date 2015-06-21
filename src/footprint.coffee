@@ -464,12 +464,9 @@ do ->
 
         sendData: ->
             { currentSrc } = @el.get 0
-            $.post @host + "/save?videoSrc=#{currentSrc}", {
+            $.post @host + "/save?videoSrc=#{currentSrc}",
                 type: @type
                 data: @data
-            }, {
-                async: false
-            }
 
     window.Footprint = (options = {}) ->
         host = getHost()
