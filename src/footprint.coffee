@@ -367,7 +367,7 @@ do ->
             while index < preparedData.length
                 obj = preparedData[index]
                 {a, b, length, value} = obj
-                if length < 3
+                if length < 2
                     ###
                     prev = next = value: Number.POSITIVE_INFINITY
                     if index < preparedData.length - 1
@@ -447,16 +447,19 @@ do ->
                 prev = curr
                 curr = video.currentTime
                 if Math.abs(curr - prev) > 1
-                    @data.push
-                        a: (start / video.duration).toFixed 3
-                        b: (prev / video.duration).toFixed 3
-                        value: 1
+                    @saveState start, prev
                     start = curr
 
             $(window).on "unload", =>
-                @el.get(0).pause()
+                @saveState start, curr
                 @data = @prepareData()
                 @sendData()
+
+        saveState: (start, end) ->
+            @data.push
+                a: (start / video.duration).toFixed 3
+                b: (end / video.duration).toFixed 3
+                value: 1
 
         sendData: ->
             { currentSrc } = @el.get 0

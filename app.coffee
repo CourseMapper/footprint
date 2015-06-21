@@ -114,6 +114,7 @@ app.post "/save", (req, res, next) ->
     data = req.body
     { videoSrc } = req.query
     data.url = req.headers.referer
+    console.log data
 
     searchObj =
         url: data.url
