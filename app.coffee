@@ -61,7 +61,7 @@ prepareData = (data, length = 100) ->
     for value, index in flatData
         if value isnt prevValue
             if prevValue
-                obj.b = index/length
+                obj.b = (index-1)/length
                 obj.length = Math.round (obj.b - obj.a) * length
                 preparedData.push obj
             obj = {
@@ -158,7 +158,7 @@ app.post "/save", (req, res, next) ->
                     id: p.id
         else
             res.json
-                code: 400
+                code: 503
                 status: "Bad request"
 
 app.listen 8080
