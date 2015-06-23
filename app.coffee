@@ -37,11 +37,20 @@ app.use serveStatic "./dist"
 prepareData = (data, length = 100) ->
     flatData = new Array length
     flatData[i] = 0 for i in [0...length]
+    console.log "================="
+    console.log "INPUT"
+    console.log data
 
     maxValue = 0
     for {a, b, value} in data
         from = Math.round a * length
         to = Math.round b * length
+        console.log "From - to"
+        console.log [a, b]
+        console.log [from, to]
+        console.log to - from < 1
+        console.log not (isFinite(a) and isFinite(b))
+        break if to - from < 1 or not (isFinite(a) and isFinite(b))
         for i in [from..to]
             flatData[i] += +value
             if flatData[i] > maxValue
@@ -128,18 +137,24 @@ app.post "/save", (req, res, next) ->
     Point.find searchObj, (err, result) ->
         if result.length > 1
             console.log "More than one object was found"
-        if result.length is 1
+        else if result.length is 1
             p = result[0]
             console.log data.data
             if data.data
                 { preparedData, maxValue } = prepareData p.data.concat data.data
                 p.data = preparedData
-                console.log preparedData
                 p.maxValue = maxValue
-        p.save (err) ->
-            res.json
-                code: 200
-                status: "OK"
-                id: p.id
+        else
+            if data.data
+                { preparedData, maxValue } = prepareData data.data
+                p.data = preparedData
+                p.maxValue = maxValue
+
+        if p.data.length
+            p.save (err) ->
+                res.json
+                    code: 200
+                    status: "OK"
+                    id: p.id
 
 app.listen 8080

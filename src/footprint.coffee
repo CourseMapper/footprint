@@ -223,7 +223,7 @@ do ->
         setData: (@data) -> @
 
         draw: ->
-            return unless @data.length
+            return unless @data
             do @clear
             heatmapLength = Math.max @width, @height
             ###
