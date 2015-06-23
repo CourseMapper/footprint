@@ -156,5 +156,9 @@ app.post "/save", (req, res, next) ->
                     code: 200
                     status: "OK"
                     id: p.id
+        else
+            res.json
+                code: 400
+                status: "Bad request"
 
 app.listen 8080
