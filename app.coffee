@@ -52,7 +52,7 @@ prepareData = (data, length = 100) ->
     for value, index in flatData
         if value isnt prevValue
             if prevValue
-                obj.b = (index - 1)/length
+                obj.b = index/length
                 obj.length = Math.round (obj.b - obj.a) * length
                 preparedData.push obj
             obj = {
@@ -67,7 +67,7 @@ prepareData = (data, length = 100) ->
     while index < preparedData.length
         obj = preparedData[index]
         { a, b, length, value } = obj
-        if length < 2
+        if length < 1
             ###
             prev = next = value: Number.POSITIVE_INFINITY
             if index < preparedData.length - 1
