@@ -155,7 +155,7 @@ do ->
                 return if @isSeeking
 
                 { duration, currentTime } = @video.get 0
-                progressWidth = Math.floor (100 / duration) * currentTime
+                progressWidth = ((100 / duration) * currentTime).toFixed 2
                 @seekHandle.css "left", progressWidth + "%"
                 @videoProgress.css "width", progressWidth + "%"
 
