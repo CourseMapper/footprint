@@ -21,7 +21,7 @@ gulp.task "lint", ->
         .pipe jshint.reporter "jshint-stylish"
 
 gulp.task "watch", ->
-    gulp.watch "./src/*.coffee", ["build"]
+    gulp.watch "./src/*", ["build"]
 
 gulp.task "server", ->
     nodemon
