@@ -404,9 +404,11 @@ do ->
                 d.body.clientHeight, d.documentElement.clientHeight
 
         sendData: ->
+            ###
             $.post @host + "/save",
                 data: @data
                 type: @type
+            ###
 
     class HtmlObserver extends GenericObserver
 
