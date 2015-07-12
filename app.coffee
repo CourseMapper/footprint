@@ -33,6 +33,7 @@ app.use cors
 
 app.use serveStatic "./dist"
 
+getValueCoefficient = (a, b) -> Math.min Math.pow(a + (b - a) / 2, 1/2) * 4, 1
 
 prepareData = (data, length = 100) ->
     flatData = new Array length
@@ -76,6 +77,10 @@ prepareData = (data, length = 100) ->
     while index < preparedData.length
         obj = preparedData[index]
         { a, b, length, value } = obj
+
+        obj.value = (value * getValueCoefficient a, b).toFixed 2
+        console.log obj
+
         if length < 1
             ###
             prev = next = value: Number.POSITIVE_INFINITY
