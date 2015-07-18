@@ -406,11 +406,9 @@ do ->
                 d.body.clientHeight, d.documentElement.clientHeight
 
         sendData: ->
-            ###
             $.post @host + "/save",
                 data: @data
                 type: @type
-            ###
 
     class HtmlObserver extends GenericObserver
 
@@ -423,21 +421,21 @@ do ->
         initEvents: ->
             setInterval =>
                 @saveState() if @active and @visible
-            , 1000
+            , 3000
 
             $(document).idle
                 onIdle: => @active = true
                 onActive: => @active = false
                 onHide: => @visible = false
                 onShow: => @visible = true
-                idle: 5000
+                idle: 10000 # 10s
             super()
 
         saveState: ->
             contentHeight = @el.get(0).scrollHeight or @getDocHeight()
             p = @getCurrViewportPosition()
             @data.push
-                value: 0.1
+                value: 0.3
                 a: p.top / contentHeight
                 b: p.bottom / contentHeight
 
