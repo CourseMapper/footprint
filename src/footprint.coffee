@@ -1,5 +1,7 @@
 $ = require "jquery"
+window.jQuery = $
 require "jquery-mousewheel"
+require "jquery.idle"
 require "./styles.less"
 
 do ->
@@ -414,12 +416,21 @@ do ->
 
         constructor: (el = body, type) ->
             @el = $ el
+            @active = true
+            @visible = true
             super type
 
         initEvents: ->
             setInterval =>
-                @saveState()
+                @saveState() if @active and @visible
             , 1000
+
+            $(document).idle
+                onIdle: => @active = true
+                onActive: => @active = false
+                onHide: => @visible = false
+                onShow: => @visible = true
+                idle: 5000
             super()
 
         saveState: ->
