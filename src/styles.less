@@ -9,10 +9,39 @@
         margin-right: 4px;
         border-radius: 10px;
         display: inline-block;
+        &:hover {
+            .fp-tooltip {
+                opacity: 1;
+            }
+        }
     }
     &btn_block {
         display: block;
         margin: 0 auto 5px;
+    }
+    &tooltip {
+        position: absolute;
+        opacity: 0;
+        background: #333;
+        color: #FFF;
+        padding: 3px 5px;
+        border-radius: 2px;
+        top: -24px;
+        left: -20px;
+    }
+    &tooltip-arrow {
+        @tooltip-arrow-width: 5px;
+        @tooltip-arrow-color: #333;
+        position: absolute;
+        bottom: -5px;
+        width: 0;
+        height: 0;
+        border-color: transparent;
+        border-style: solid;
+        left: 50%;
+        margin-left: -@tooltip-arrow-width;
+        border-width: @tooltip-arrow-width @tooltip-arrow-width 0;
+        border-top-color: @tooltip-arrow-color;
     }
     // Video
     &video-heatmap {
