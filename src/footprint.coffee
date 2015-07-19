@@ -153,6 +153,8 @@ do ->
                 width: @video.width()
                 opacity: 1
 
+        destroy: -> @el.remove()
+
         initEvents: ->
 
             @video.on "timeupdate", =>
@@ -170,6 +172,8 @@ do ->
                     video.currentTime = video.duration * point
                 else
                     video.play()
+
+            @el.find(".fp-btn_close").on "click", => @destroy()
 
             @seekHandle.on "mousedown", (e) =>
                 @isSeeking = true
