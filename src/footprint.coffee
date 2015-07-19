@@ -132,6 +132,8 @@ do ->
                 @heatmap = new LinearHeatmap @el
                 @getData()
                 .done (response) =>
+                    @el.find(".fp-scale-from").text 1
+                    @el.find(".fp-scale-to").text response.result?.maxValue or 1
                     @heatmap.setData @data
                         .setMaxValue response.result?.maxValue
                         .draw()
