@@ -39,6 +39,7 @@
     "gulp-rename": "^1.2.2",
     "coffeeify": "^1.1.0",
     "node-lessify": "0.0.10",
-    "jadeify": "^4.3.0"
+    "jadeify": "^4.3.0",
+    "svg-browserify": "0.0.2"
   }
 }

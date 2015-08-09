@@ -2,7 +2,13 @@ $ = require "jquery"
 window.jQuery = $
 require "jquery-mousewheel"
 require "jquery.idle"
+{ plyr } = require "../bower_components/plyr/dist/plyr.js"
+sprite = require "../bower_components/plyr/dist/sprite.svg"
+require "../bower_components/plyr/dist/plyr.css"
 require "./styles.less"
+
+$("body").prepend $ "<div style='display:none;'>#{sprite}</div>"
+plyr.setup()
 
 do ->
 

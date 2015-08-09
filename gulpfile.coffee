@@ -5,11 +5,12 @@ less = require "require-less"
 rename = require "gulp-rename"
 browserify = require "gulp-browserify"
 uglify = require "gulp-uglify"
+svg = require "svg-browserify"
 
 gulp.task "build", ->
     gulp.src "./src/*.coffee", read: false
         .pipe browserify
-            transform: ["coffeeify", "node-lessify", "jadeify"]
+            transform: ["coffeeify", "node-lessify", "jadeify", svg]
             extensions: [".coffee"]
         #.pipe uglify()
         .pipe rename "footprint.js"
