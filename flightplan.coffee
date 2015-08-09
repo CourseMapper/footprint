@@ -18,6 +18,7 @@ plan.remote (remote) ->
         remote.log "Install dependencies"
 
         remote.exec "npm install"
+        remote.exec "bower i --alow-root"
 
         remote.log "build app"
         remote.exec "gulp build"
