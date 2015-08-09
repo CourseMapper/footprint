@@ -8,7 +8,6 @@ require "../bower_components/plyr/dist/plyr.css"
 require "./styles.less"
 
 $("body").prepend $ "<div style='display:none;'>#{sprite}</div>"
-plyr.setup()
 
 do ->
 
@@ -124,7 +123,7 @@ do ->
 
     class VideoViewer
 
-        constructor: (video) ->
+        constructor: (video, controls = false) ->
             tpl = require "./slider.jade"
             @el = $ tpl()
             @seekHandle = @el.find ".fp-seek-handle"
@@ -132,7 +131,12 @@ do ->
             @isSeeking = false
             @video = $ video
             @host = getHost()
-            @el.insertBefore @video
+            if controls
+                $("<div></div>").addClass("player").insertBefore(@video).append(@video)
+                plyr.setup()
+                @video.closest(".player").find(".player-progress").empty().append @el
+            else
+                @el.insertBefore @video
             setTimeout =>
                 @refreshSize()
                 @heatmap = new LinearHeatmap @el
@@ -481,6 +485,7 @@ do ->
                 @sendData()
 
         saveState: (start, end) ->
+            video = @el.get 0
             @data.push
                 a: (start / video.duration).toFixed 3
                 b: (end / video.duration).toFixed 3
@@ -517,7 +522,7 @@ do ->
                 new HtmlObserver window, "html"
             video: ->
                 $container = $ options.container or "video"
-                new VideoViewer "video"
+                new VideoViewer "video", options.controls
                 new VideoObserver "video"
 
         $ -> typeMap[options.type or "html"]?()

@@ -15,28 +15,26 @@
   </head>
   <body>
     <div class="video-holder">
-      <video id="video" controls="" preload="none" mediagroup="myVideoGroup" poster="">
+      <video id="video" controls crossorigin preload="none" mediagroup="myVideoGroup" poster="">
         <source id="mp4" src="./DebRoy_2011.mp4" type="video/mp4">
         <p>Your user agent does not support the HTML5 Video element.</p>
       </video>
-    </div>
-    <div class="player">
-      <video poster="https://cdn.selz.com/plyr/1.0/poster.jpg" controls crossorigin>
-          <!-- Video files -->
-          <source src="https://cdn.selz.com/plyr/1.0/movie.mp4" type="video/mp4">
-          <source src="https://cdn.selz.com/plyr/1.0/movie.webm" type="video/webm">
+      <!--<div class="player">
+        <video poster="https://cdn.selz.com/plyr/1.0/poster.jpg" controls crossorigin>
+            <source src="https://cdn.selz.com/plyr/1.0/movie.mp4" type="video/mp4">
+            <source src="https://cdn.selz.com/plyr/1.0/movie.webm" type="video/webm">
 
-          <!-- Text track file -->
-          <track kind="captions" label="English captions" src="https://cdn.selz.com/plyr/1.0/movie_captions_en.vtt" srclang="en" default>
+            <track kind="captions" label="English captions" src="https://cdn.selz.com/plyr/1.0/movie_captions_en.vtt" srclang="en" default>
 
-          <!-- Fallback for browsers that don't support the <video> element -->
-          <a href="https://cdn.selz.com/plyr/1.0/movie.mp4">Download</a>
-      </video>
+            <a href="https://cdn.selz.com/plyr/1.0/movie.mp4">Download</a>
+        </video>
+      </div>-->
     </div>
     <script src="http://localhost:8080/footprint.js"></script>
     <script>
       new Footprint({
-        type: "video"
+        type: "video",
+        controls: true
       });
     </script>
   </body>
