@@ -178,11 +178,13 @@ do ->
             @seekHandle.on "mousedown", (e) =>
                 @isSeeking = true
                 { clientX, clientY } = e
+                elOffset = @el.offset()
                 { left } = @seekHandle.offset()
                 @seekHandle.addClass "active"
                 $(window).on "mousemove", (e) =>
-                    @seekHandle.css "left", e.clientX - clientX + left + "px"
-                    @videoProgress.css "width", e.clientX - clientX + left + "px"
+                    newLeft = e.clientX - clientX + left - elOffset.left
+                    @seekHandle.css "left", newLeft + "px"
+                    @videoProgress.css "width", newLeft + "px"
 
                 $(window).on "mouseup", (e) =>
                     $(window).off "mousemove"
