@@ -34,6 +34,8 @@ do ->
             @heatmap = new LinearHeatmap @scrollBar
             @getData()
             .done (response) =>
+                @el.find(".fp-scale-from").text 1
+                @el.find(".fp-scale-to").text Math.round response.result?.maxValue or 1
                 @heatmap.setData @data
                     .setMaxValue response.result?.maxValue
                     .draw()
