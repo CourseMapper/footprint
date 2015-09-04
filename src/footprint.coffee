@@ -185,7 +185,9 @@ do ->
                 else
                     video.play()
 
-            @el.find(".fp-btn_close").on "click", => @destroy()
+            @el.find(".fp-btn_close").on "click", =>
+                @el.find(".fp-info-holder").remove()
+                @el.find("canvas").remove()
 
             @seekHandle.on "mousedown", (e) =>
                 @isSeeking = true
