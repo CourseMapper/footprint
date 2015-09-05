@@ -35,10 +35,11 @@ do ->
             @getData()
             .done (response) =>
                 @el.find(".fp-scale-from").text 1
-                @el.find(".fp-scale-to").text Math.round response.result?.maxValue or 1
-                @heatmap.setData @data
-                    .setMaxValue response.result?.maxValue
-                    .draw()
+                if @data
+                    @heatmap.setData @data
+                        .setMaxValue response.result?.maxValue
+                        .draw()
+                @el.find(".fp-scale-to").text Math.round @heatmap.max
 
         initWidget: ->
             tpl = require "./scroll.jade"
@@ -49,7 +50,7 @@ do ->
             @scrollBarHolder.css top: @top
             @scrollBar = @scrollBarHolder.find ".fp-scrollbar"
             @scroll = @scrollBarHolder.find ".fp-scroll"
-            @scrollBtn = @scrollBarHolder.find ".fp-scroll-btn"
+            @scrollBtn = @scrollBarHolder.find ".fp-btn_close"
             @el.append @scrollBarHolder
             @setScrollSize()
 
@@ -92,21 +93,16 @@ do ->
             @scrollEl
                 .on "resize", => @setScrollSize()
                 .on "mousemove", (e) =>
-                    shouldOpen = $(window).width() - e.pageX < 20
-                    shouldClose = $(window).width() - e.pageX < 50
+                    shouldOpen = $(window).width() - e.pageX < 15
+                    shouldClose = $(window).width() - e.pageX < 70
                     if shouldOpen and not @isOpen
                         @scrollBarHolder.animate
                             right: 0
-                        @scrollBtn.animate
-                            opacity: 1
-                        @scrollBtn.css opacity: 1
                         @isOpen = true
                     if not shouldClose and @isOpen
                         @isOpen = false
                         @scrollBarHolder.animate
                             right: "-38px"
-                        @scrollBtn.animate
-                            opacity: 0
                 .on "mouseup", (e) =>
                     @scrollBar.off "mousemove"
 
@@ -120,8 +116,7 @@ do ->
                 @scrollBar.on "mousemove", (e) =>
                     @scrollEl.scrollTop @getElScrollPosition e.clientY - @top
 
-            @scrollBtn.on "click", =>
-                @destroy()
+            @scrollBtn.on "click", => @destroy()
 
     class VideoViewer
 
@@ -319,7 +314,10 @@ do ->
                 d.body.offsetHeight, d.documentElement.offsetHeight,
                 d.body.clientHeight, d.documentElement.clientHeight
 
-        sendData: -> $.post @host + "/save", { data, type, key }
+        sendData: -> $.post @host + "/save",
+            data: @data
+            type: @type
+            key: @key
 
     class HtmlObserver extends GenericObserver
 
