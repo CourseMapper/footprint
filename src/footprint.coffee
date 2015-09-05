@@ -387,16 +387,6 @@ do ->
             .done => @data = []
 
     window.Footprint = (options = {}) ->
-        host = getHost()
-
-        ###
-        $ ->
-            { currentSrc } = $("video").get 0
-            $.get host + "/get?videoSrc=#{currentSrc}", (response) ->
-                g = new GenericObserver
-                g.data = response.result?.data
-                console.log g.prepareData()
-        ###
 
         typeMap =
             pdf: ->
@@ -409,7 +399,8 @@ do ->
                 new HtmlObserver window, "html"
             video: ->
                 $container = $ options.container or "video"
-                new VideoViewer "video", options.controls
-                new VideoObserver "video"
+                $container.each (i, video) ->
+                    new VideoViewer video, options.controls
+                    new VideoObserver video
 
         $ -> typeMap[options.type or "html"]?()
