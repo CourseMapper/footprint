@@ -3,24 +3,25 @@ serveStatic = require "serve-static"
 mongoose = require "mongoose"
 bodyParser = require "body-parser"
 cors = require "express-cors"
+_ = require "lodash"
 
 app = express()
 connectionString = "mongodb://localhost:27017/fp"
 mongoose.connect connectionString
 
-DataSchema = new mongoose.Schema
-    a: Number
-    b: Number
-    value: Number
+rawDataSchema = new mongoose.Schema
+    key: Number
+    data: Array
 
-PointSchema = new mongoose.Schema
+HeatmapSchema = new mongoose.Schema
     url: String
     type: String
     videoSrc: String
     maxValue: Number
-    data: [DataSchema]
+    data: Array
+    rawData: [rawDataSchema]
 
-Point = mongoose.model "Point", PointSchema
+Heatmap = mongoose.model "Heatmap", HeatmapSchema
 
 app.use bodyParser.json()
 app.use bodyParser.urlencoded extended: true
@@ -38,77 +39,17 @@ getValueCoefficient = (a, b) -> Math.min Math.pow(a + (b - a) / 2, 1/2) * 4, 1
 prepareData = (data, length = 100) ->
     flatData = new Array length
     flatData[i] = 0 for i in [0...length]
-    console.log "================="
-    console.log "INPUT"
-    console.log data
 
-    maxValue = 0
     for {a, b, value} in data
         from = Math.round a * length
         to = Math.round b * length
-        console.log "From - to"
-        console.log [a, b]
-        console.log [from, to]
-        console.log to - from < 1
-        console.log not (isFinite(a) and isFinite(b))
-        break if to - from < 1 or not (isFinite(a) and isFinite(b))
+        break if to - from < 2 or not (isFinite(a) and isFinite(b))
         for i in [from..to]
             flatData[i] += +value
-            if flatData[i] > maxValue
-                maxValue = flatData[i]
 
-    prevValue = obj = null
-    preparedData = []
-    for value, index in flatData
-        if value isnt prevValue
-            if prevValue
-                obj.b = (index-1)/length
-                obj.length = Math.round (obj.b - obj.a) * length
-                preparedData.push obj
-            obj = {
-                a: index/length
-                value
-            }
-            prevValue = value
+    flatData
 
-    optimizedData = []
-
-    index = 0
-    while index < preparedData.length
-        obj = preparedData[index]
-        { a, b, length, value } = obj
-
-        obj.value = (value * getValueCoefficient a, b).toFixed 2
-        console.log obj
-
-        if length < 1
-            ###
-            prev = next = value: Number.POSITIVE_INFINITY
-            if index < preparedData.length - 1
-                next = preparedData[index + 1]
-            if index > 0
-                prev = preparedData[index - 1]
-
-            prevDiff = Math.abs prev.value - value
-            nextDiff = Math.abs next.value - value
-
-            if prevDiff < nextDiff
-                prev.b = b
-                prev.value = Math.round (prev.value + value) / 2
-                optimizedData.pop()
-                optimizedData.push prev
-            else
-                next.a = a
-                next.value = Math.round (next.value + value) / 2
-                optimizedData.push next
-                index++
-
-            ###
-        else
-            optimizedData.push obj
-        index++
-
-    { preparedData: optimizedData, maxValue }
+mergeData = (a, b) -> _.map _.zip(a, b), _.sum
 
 app.get "/get", (req, res) ->
     { videoSrc } = req.query
@@ -116,7 +57,7 @@ app.get "/get", (req, res) ->
         url: req.headers.referer
     if videoSrc
         searchObj.videoSrc = videoSrc
-    Point.find searchObj, (err, result) ->
+    Heatmap.find searchObj, (err, result) ->
         result = result[0]
         res.json {
             result
@@ -128,39 +69,43 @@ app.post "/save", (req, res, next) ->
     data = req.body
     { videoSrc } = req.query
     data.url = req.headers.referer
-    console.log data
 
-    searchObj =
-        url: data.url
+    key = data.key
+    delete data.key
+
+    searchObj = url: data.url
 
     if videoSrc
-        data.videoSrc = videoSrc
         searchObj.videoSrc = videoSrc
 
-    p = new Point data
+    heatmap = new Heatmap data
 
-    Point.find searchObj, (err, result) ->
+    Heatmap.find searchObj, (err, result) ->
         if result.length > 1
             console.log "More than one object was found"
-        else if result.length is 1
-            p = result[0]
-            console.log data.data
-            if data.data
-                { preparedData, maxValue } = prepareData p.data.concat data.data
-                p.data = preparedData
-                p.maxValue = maxValue
         else
-            if data.data
-                { preparedData, maxValue } = prepareData data.data
-                p.data = preparedData
-                p.maxValue = maxValue
+            preparedData = prepareData data.data
+            if result.length is 1 and data.data
+                heatmap = result[0]
+                heatmap.data = mergeData heatmap.data, preparedData
+            else
+                heatmap.data = preparedData
+            heatmap.maxValue = _.max heatmap.data
 
-        if p.data.length
-            p.save (err) ->
+        rawData = _.find heatmap.rawData, key: +key
+        if rawData
+            rawData.data = mergeData rawData.data, preparedData
+        else
+            heatmap.rawData.push
+                key: key
+                data: preparedData
+
+        if heatmap.data.length
+            heatmap.save (err) ->
                 res.json
                     code: 200
                     status: "OK"
-                    id: p.id
+                    id: heatmap.id
         else
             res.json
                 code: 503

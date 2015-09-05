@@ -145,10 +145,11 @@ do ->
                 @getData()
                 .done (response) =>
                     @el.find(".fp-scale-from").text 1
-                    @el.find(".fp-scale-to").text response.result?.maxValue or 1
-                    @heatmap.setData @data
-                        .setMaxValue response.result?.maxValue
-                        .draw()
+                    if @data
+                        @heatmap.setData @data
+                            .setMaxValue response.result?.maxValue
+                            .draw()
+                    @el.find(".fp-scale-to").text @heatmap.max
                 @initEvents()
             , 1000
             setInterval =>
@@ -162,7 +163,7 @@ do ->
 
         refreshSize: ->
             @el.css
-                width: @video.width()
+                width: @el.parent().width()
                 opacity: 1
 
         destroy: -> @el.remove()
@@ -182,8 +183,6 @@ do ->
                 point = (e.pageX - @el.offset().left) / @el.width()
                 if video.duration
                     video.currentTime = video.duration * point
-                else
-                    video.play()
 
             @el.find(".fp-btn_close").on "click", =>
                 @el.find(".fp-info-holder").remove()
@@ -225,11 +224,8 @@ do ->
             @canvas.height = @height = $holder.height()
             @isLandscape = @width > @height
             @data = []
-            @stopPoints = []
             @max = 4
-            @colorPalette = do @buildColorPalette
-
-        defaultMaxStopPoint: 100
+            @colorPalette = @buildColorPalette()
 
         defaultGradient:
             0.4: "blue"
@@ -248,73 +244,22 @@ do ->
 
         draw: ->
             return unless @data
-            do @clear
+            @clear()
             heatmapLength = Math.max @width, @height
-            ###
-            for {a, b, value}, index in @data
-                from = Math.round a * heatmapLength
-                to = Math.round b * heatmapLength
-                length = to - from
-                delta = heatmapLength * 0.01
-                from = from - delta
-                if from < 0
-                    from = 0
-                to = to + delta
-                if to > heatmapLength
-                    to = heatmapLength
-                @ctx.globalAlpha = value / @max
-
-                @ctx.save()
-
-                length = length + delta * 2
-
-                if @isLandscape
-                    grd = @ctx.createLinearGradient 0, 0, length, 0
-                    @ctx.translate from, 0
-                else
-                    grd = @ctx.createLinearGradient 0, 0, 0, length
-                    @ctx.translate 0, from
-
-                if from is 0
-                    grd.addColorStop 0, "black"
-                else
-                    grd.addColorStop 0, "transparent"
-                    grd.addColorStop 0.2, "black"
-                grd.addColorStop 0.8, "black"
-                grd.addColorStop 1, "transparent"
-                @ctx.fillStyle = grd
-
-                if @isLandscape
-                    @ctx.fillRect 0, 0, length, @height
-                else
-                    @ctx.fillRect 0, 0, @width, length
-
-                @ctx.restore()
-            ###
             if @isLandscape
                 grd = @ctx.createLinearGradient 0, 0, heatmapLength, 0
             else
                 grd = @ctx.createLinearGradient 0, 0, 0, heatmapLength
-            for {a, b, value}, index in @data
-                grd.addColorStop a, "rgba(0,0,0,#{(value/@max).toFixed 2})"
-                grd.addColorStop b, "rgba(0,0,0,#{(value/@max).toFixed 2})"
-                if index is 0 and a isnt 0
-                    grd.addColorStop a - 0.01, "rgba(0,0,0,0)"
-                if index is @data.length - 1
-                    grd.addColorStop b + 0.01, "rgba(0,0,0,0)"
-                if index < @data.length - 1
-                    next = @data[index + 1]
-                    nextA = Math.round next.a * 100
-                    currB = Math.round b * 100
-                    unless currB is nextA - 1
-                        grd.addColorStop (currB + 1)/100, "rgba(0,0,0,0)"
-                        grd.addColorStop (nextA - 1)/100, "rgba(0,0,0,0)"
+
+            for value, index in @data
+                grd.addColorStop index / 100, "rgba(0,0,0,#{(value/@max).toFixed 2})"
 
             @ctx.fillStyle = grd
             if @isLandscape
                 @ctx.fillRect 0, 0, heatmapLength, @height
             else
                 @ctx.fillRect 0, 0, @width, heatmapLength
+
             grayHeatMap = @ctx.getImageData 0, 0, @width, @height
             @colorize grayHeatMap.data
             @ctx.putImageData grayHeatMap, 0, 0
@@ -354,72 +299,12 @@ do ->
         constructor: (@type = "html")->
             @host = getHost()
             @data = []
+            @key = @createKey()
             @initEvents()
 
-        initEvents: ->
-            $(window).on "unload", =>
-                @data = @prepareData()
-                @sendData()
+        createKey: -> Date.now() - Math.floor(Math.random() * 1000)
 
-        prepareData: (length = 100) ->
-            flatData = []
-            flatData = new Array length
-            flatData[i] = 0 for i in [0...length]
-
-            for {a, b, value} in @data
-                from = Math.round a * length
-                to = Math.round b * length
-                flatData[i] += +value for i in [from..to]
-
-            prevValue = obj = null
-            preparedData = []
-            for value, index in flatData
-                if value isnt prevValue
-                    if prevValue
-                        obj.b = (index - 1)/length
-                        obj.length = Math.round (obj.b - obj.a) * length
-                        preparedData.push obj
-                    obj = {
-                        a: index/length
-                        value
-                    }
-                    prevValue = value
-
-            optimizedData = []
-
-            index = 0
-            while index < preparedData.length
-                obj = preparedData[index]
-                {a, b, length, value} = obj
-                if length < 2
-                    ###
-                    prev = next = value: Number.POSITIVE_INFINITY
-                    if index < preparedData.length - 1
-                        next = preparedData[index + 1]
-                    if index > 0
-                        prev = preparedData[index - 1]
-
-                    prevDiff = Math.abs prev.value - value
-                    nextDiff = Math.abs next.value - value
-
-                    if prevDiff < nextDiff
-                        prev.b = b
-                        prev.value = Math.round (prev.value + value) / 2
-                        optimizedData.pop()
-                        optimizedData.push prev
-                    else
-                        next.a = a
-                        next.value = Math.round (next.value + value) / 2
-                        optimizedData.push next
-                        index++
-                    ###
-
-                else
-                    optimizedData.push obj
-                index++
-
-
-            optimizedData
+        initEvents: -> $(window).on "unload", => @sendData()
 
         getDocHeight: ->
             d = document
@@ -427,10 +312,7 @@ do ->
                 d.body.offsetHeight, d.documentElement.offsetHeight,
                 d.body.clientHeight, d.documentElement.clientHeight
 
-        sendData: ->
-            $.post @host + "/save",
-                data: @data
-                type: @type
+        sendData: -> $.post @host + "/save", { data, type, key }
 
     class HtmlObserver extends GenericObserver
 
@@ -485,22 +367,23 @@ do ->
 
             $(window).on "unload", =>
                 @saveState start, curr
-                @data = @prepareData()
-                @sendData()
 
         saveState: (start, end) ->
             video = @el.get 0
-            @data.push
-                a: (start / video.duration).toFixed 3
-                b: (end / video.duration).toFixed 3
-                value: 1
-            @sendData()
+            value = 1
+            a = (start / video.duration).toFixed 3
+            b = (end / video.duration).toFixed 3
+            if +a >= 0 and +b >= 0
+                @data.push { a, b, value }
+                @sendData()
 
         sendData: ->
             { currentSrc } = @el.get 0
-            $.post @host + "/save?videoSrc=#{currentSrc}",
+            $.post @host + "/save",
+                videoSrc: currentSrc
                 type: @type
                 data: @data
+                key: @key
             .done => @data = []
 
     window.Footprint = (options = {}) ->
