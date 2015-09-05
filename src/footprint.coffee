@@ -174,9 +174,10 @@ do ->
                 return if @isSeeking
 
                 { duration, currentTime } = @video.get 0
-                progressWidth = ((100 / duration) * currentTime).toFixed 2
-                @seekHandle.css "left", progressWidth + "%"
-                @videoProgress.css "width", progressWidth + "%"
+                progressWidth = currentTime / duration
+                progressWidth = Math.round(progressWidth * @el.width()) - 2
+                @seekHandle.css "left", progressWidth + "px"
+                @videoProgress.css "width", progressWidth + "px"
 
             @el.on "click", (e) =>
                 video = @video.get 0
@@ -187,6 +188,7 @@ do ->
             @el.find(".fp-btn_close").on "click", =>
                 @el.find(".fp-info-holder").remove()
                 @el.find("canvas").remove()
+                false
 
             @seekHandle.on "mousedown", (e) =>
                 @isSeeking = true
@@ -195,7 +197,10 @@ do ->
                 { left } = @seekHandle.offset()
                 @seekHandle.addClass "active"
                 $(window).on "mousemove", (e) =>
-                    newLeft = e.clientX - clientX + left - elOffset.left
+                    maxLeft = @el.width() - 2
+                    newLeft = e.clientX - clientX + left - elOffset.left + 4
+                    newLeft = 0 if newLeft < 0
+                    newLeft = maxLeft if newLeft > maxLeft
                     @seekHandle.css "left", newLeft + "px"
                     @videoProgress.css "width", newLeft + "px"
 
@@ -205,7 +210,9 @@ do ->
                     @isSeeking = false
                     video = @video.get 0
                     @seekHandle.removeClass "active"
-                    point = (@seekHandle.offset().left - @el.offset().left) / @el.width()
+                    width = @seekHandle.parent().width()
+                    console.log [@seekHandle.offset().left, @el.offset().left, width]
+                    point = (@seekHandle.offset().left - @el.offset().left + 2) / width
                     if video.duration
                         video.currentTime = video.duration * point
                     else
