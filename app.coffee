@@ -89,10 +89,11 @@ app.post "/save", (req, res, next) ->
     key = data.key
     delete data.key
 
-    searchObj = url: data.url
+    searchObj =
+        url: data.url
 
-    if videoSrc
-        searchObj.videoSrc = videoSrc
+    if data.videoSrc
+        searchObj.videoSrc = data.videoSrc
 
     heatmap = new Heatmap data
 
