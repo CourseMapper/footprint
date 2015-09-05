@@ -149,7 +149,7 @@ do ->
                         @heatmap.setData @data
                             .setMaxValue response.result?.maxValue
                             .draw()
-                    @el.find(".fp-scale-to").text @heatmap.max
+                    @el.find(".fp-scale-to").text Math.round @heatmap.max
                 @initEvents()
             , 1000
             setInterval =>

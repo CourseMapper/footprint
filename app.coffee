@@ -6,6 +6,9 @@ cors = require "express-cors"
 _ = require "lodash"
 
 app = express()
+
+# MongoDB configuration
+
 connectionString = "mongodb://localhost:27017/fp"
 mongoose.connect connectionString
 
@@ -23,6 +26,8 @@ HeatmapSchema = new mongoose.Schema
 
 Heatmap = mongoose.model "Heatmap", HeatmapSchema
 
+# Application
+
 app.use bodyParser.json()
 app.use bodyParser.urlencoded extended: true
 
@@ -34,9 +39,20 @@ app.use cors
 
 app.use serveStatic "./dist"
 
+# Helpers
+
 getValueCoefficient = (a, b) -> Math.min Math.pow(a + (b - a) / 2, 1/2) * 4, 1
 
+mergeData = (a, b) -> _.map _.zip(a, b), _.sum
+
 prepareData = (data, length = 100) ->
+
+    data = _.map data, ({value, a, b}) ->
+        value = value * getValueCoefficient +a, +b
+        value: value.toFixed 2
+        a: +a
+        b: +b
+
     flatData = new Array length
     flatData[i] = 0 for i in [0...length]
 
@@ -49,7 +65,7 @@ prepareData = (data, length = 100) ->
 
     flatData
 
-mergeData = (a, b) -> _.map _.zip(a, b), _.sum
+# Routes
 
 app.get "/get", (req, res) ->
     { videoSrc } = req.query
