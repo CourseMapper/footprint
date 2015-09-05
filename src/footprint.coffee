@@ -175,7 +175,7 @@ do ->
 
                 { duration, currentTime } = @video.get 0
                 progressWidth = currentTime / duration
-                progressWidth = Math.round(progressWidth * (@el.width() - 2)) - 2
+                progressWidth = Math.round(progressWidth * (@el.width() - 4))
                 @seekHandle.css "left", progressWidth + "px"
                 @videoProgress.css "width", progressWidth + "px"
 
@@ -198,7 +198,7 @@ do ->
                 @seekHandle.addClass "active"
                 $(window).on "mousemove", (e) =>
                     maxLeft = @el.width() - 4
-                    newLeft = e.clientX - clientX + left - elOffset.left + 4
+                    newLeft = e.clientX - clientX + left - elOffset.left + 6
                     newLeft = 0 if newLeft < 0
                     newLeft = maxLeft if newLeft > maxLeft
                     @seekHandle.css "left", newLeft + "px"
@@ -210,9 +210,9 @@ do ->
                     @isSeeking = false
                     video = @video.get 0
                     @seekHandle.removeClass "active"
-                    width = @seekHandle.parent().width()
+                    width = @el.width() - 4
                     console.log [@seekHandle.offset().left, @el.offset().left, width]
-                    point = (@seekHandle.offset().left - @el.offset().left + 2) / width
+                    point = (@seekHandle.offset().left - @el.offset().left) / width
                     if video.duration
                         video.currentTime = video.duration * point
                     else
