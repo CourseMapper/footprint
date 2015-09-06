@@ -128,4 +128,17 @@ app.post "/save", (req, res, next) ->
                 code: 503
                 status: "Bad request"
 
+app.get "/calc", (req, res) ->
+    Heatmap.find {}, (err, heatmaps) ->
+        _.each heatmaps, (heatmap) ->
+            data = _.pluck heatmap.rawData, "data"
+            zipped = _.zip.apply _, data
+            heatmap.data = _.map zipped, _.sum
+            heatmap.save()
+        res.json {
+            result: _.pluck heatmaps, "url"
+            code: 200
+            status: "OK"
+        }
+
 app.listen 8080
