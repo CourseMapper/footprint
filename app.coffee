@@ -102,7 +102,7 @@ app.post "/save", (req, res, next) ->
             console.log "More than one object was found"
         else
             preparedData = prepareData data.data
-            if result.length is 1 and data.data
+            if result.length is 1
                 heatmap = result[0]
                 heatmap.data = mergeData heatmap.data, preparedData
             else
