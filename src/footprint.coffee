@@ -314,10 +314,12 @@ do ->
                 d.body.offsetHeight, d.documentElement.offsetHeight,
                 d.body.clientHeight, d.documentElement.clientHeight
 
-        sendData: -> $.post @host + "/save",
-            data: @data
-            type: @type
-            key: @key
+        sendData: ->
+            $.post @host + "/save",
+                data: @data
+                type: @type
+                key: @key
+            .done => @data = []
 
     class HtmlObserver extends GenericObserver
 
@@ -331,6 +333,10 @@ do ->
             setInterval =>
                 @saveState() if @active and @visible
             , 3000
+            setInterval =>
+                if @data.length > 0
+                    @sendData()
+            , 10000
 
             $(document).idle
                 onIdle: => @active = true
