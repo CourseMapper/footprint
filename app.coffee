@@ -59,7 +59,7 @@ prepareData = (data, length = 100) ->
     for {a, b, value} in data
         from = Math.round a * length
         to = Math.round b * length
-        break if to - from < 2 or not (isFinite(a) and isFinite(b))
+        break if to - from < 1 or not (isFinite(a) and isFinite(b))
         for i in [from..to]
             flatData[i] += +value
 
