@@ -35,6 +35,8 @@ app.use cors
     allowedOrigins: [
         "fp.dev:*"
         "*.sabov.me:*"
+        "localhost:*"
+        "*.rwth-aachen.de:*"
     ]
 
 app.use serveStatic "./dist"

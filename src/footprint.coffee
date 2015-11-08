@@ -120,7 +120,7 @@ do ->
 
     class VideoViewer
 
-        constructor: (video, controls = false) ->
+        constructor: (video, controls = false, @timeupdate = true) ->
             tpl = require "./slider.jade"
             @el = $ tpl()
             @seekHandle = @el.find ".fp-seek-handle"
@@ -163,9 +163,14 @@ do ->
 
         destroy: -> @el.remove()
 
-        initEvents: ->
+        onTimeUpdate: (fn) ->
+            if @timeupdate
+                @el.on "timeupdate", fn
+            else
+                setInterval fn, 500
 
-            @video.on "timeupdate", =>
+        initEvents: ->
+            @onTimeUpdate =>
                 return if @isSeeking
 
                 { duration, currentTime } = @video.get 0
@@ -361,15 +366,21 @@ do ->
 
     class VideoObserver extends GenericObserver
 
-        constructor: (el) ->
+        constructor: (el, @timeupdate = true) ->
             @el = $ el
             super "video"
+
+        onTimeUpdate: (fn) ->
+            if @timeupdate
+                @el.on "timeupdate", fn
+            else
+                setInterval fn, 500
 
         initEvents: ->
             video = @el.get 0
             start = curr = prev = 0
 
-            @el.on "timeupdate", =>
+            @onTimeUpdate =>
                 prev = curr
                 curr = video.currentTime
                 if Math.abs(curr - prev) > 1
@@ -411,7 +422,9 @@ do ->
             video: ->
                 $container = $ options.container or "video"
                 $container.each (i, video) ->
-                    new VideoViewer video, options.controls
-                    new VideoObserver video
+                    if options.timeupdate isnt false
+                        options.timeupdate = true
+                    new VideoViewer video, options.controls, options.timeupdate
+                    new VideoObserver video, options.timeupdate
 
         $ -> typeMap[options.type or "html"]?()
