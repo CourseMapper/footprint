@@ -120,7 +120,7 @@ do ->
 
     class VideoViewer
 
-        constructor: (video, controls = false, @timeupdate = true) ->
+        constructor: (video, { controls, timeupdate, infoHolder, sliderHolder }) ->
             tpl = require "./slider.jade"
             @el = $ tpl()
             @seekHandle = @el.find ".fp-seek-handle"
@@ -132,6 +132,13 @@ do ->
                 $("<div></div>").addClass("player").insertBefore(@video).append(@video)
                 plyr.setup()
                 @video.closest(".player").find(".player-progress").empty().append @el
+            else if sliderHolder
+                setTimeout =>
+                    @el.appendTo $ sliderHolder
+                    if sliderHolder
+                        @el.find(".fp-btn_close").remove()
+                        @el.find(".fp-info-holder").appendTo $ infoHolder
+                , 100
             else
                 @el.insertBefore @video
             setTimeout =>
@@ -424,7 +431,7 @@ do ->
                 $container.each (i, video) ->
                     if options.timeupdate isnt false
                         options.timeupdate = true
-                    new VideoViewer video, options.controls, options.timeupdate
+                    new VideoViewer video, options
                     new VideoObserver video, options.timeupdate
 
         $ -> typeMap[options.type or "html"]?()
