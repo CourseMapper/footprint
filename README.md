@@ -1,5 +1,8 @@
-footprint
+FootPrint
 =========
+
+<img width="379" alt="screen shot 2015-11-23 at 10 27 10 am" src="https://cloud.githubusercontent.com/assets/1277720/11333275/c9013286-91cc-11e5-81b4-bf0ca81b51ce.png">
+
 
 RWTH Aachen University - Master thesis
 
