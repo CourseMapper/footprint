@@ -16,13 +16,15 @@ sudo npm install -g bower
 ### This will install the needed modules
 ```
 npm install
-run mongoDB if it is not yet running
 ```
+
+Run mongoDB if it is not yet running
+
 ```
-[optional] bower install
+bower install
 ```
 ### Run pre-script compiler
 `gulp build`
 
 ### Run the application
-`gukp`
+`gulp`
