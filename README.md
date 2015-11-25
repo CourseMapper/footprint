@@ -22,7 +22,7 @@ Pre-requisities:
 2. NodeJS
 3. npm
  
-*Install and run MongoDB*
+**Install and run MongoDB**
 
 https://docs.mongodb.org/manual/installation/
 
@@ -33,24 +33,24 @@ mkdir -p /data/db
 sudo mongod
 ```
 
-*Install command line tools*
+**Install command line tools**
 ```
 npm install -g gulp
 npm install -g bower
 npm install -g coffee-script
 ```
-*Install dependencies*
+**Install dependencies**
 ```
 npm install
 bower install
 ```
 
-*Run pre-script compiler*
+**Run pre-script compiler**
 ```
 gulp build
 ```
 
-*Run the application*
+**Run the application**
 ```
 gulp
 ```
