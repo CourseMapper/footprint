@@ -55,7 +55,8 @@ gulp build
 gulp
 ```
 
-Now you can use the FootPrint http://localhost:8080/get
+Now you can use the FootPrint
+http://localhost:8080/get
 
 ### Run examples
 
