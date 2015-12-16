@@ -6,14 +6,6 @@ FootPrint
 
 RWTH Aachen University - Master thesis
 
-## Demos
-
-http://video.sabov.me/
-
-http://rwth.sabov.me/
-
-http://pdf.sabov.me/pdf/viewer.html?file=files/MeasuringBMI.pdf
-
 ## Installation
 
 Pre-requisities:
@@ -58,6 +50,25 @@ gulp
 Now you can use the FootPrint
 
 http://localhost:8080/get
+
+### Production
+
+Open `app.coffee` file and change port:
+
+```coffee
+app.listen 80
+```
+
+**Install pm2**
+```
+npm install -s pm2
+```
+
+**Run application**
+```
+pm2 start app.coffee
+```
+
 
 ### Run examples
 
