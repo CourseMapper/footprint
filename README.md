@@ -61,7 +61,7 @@ app.listen 80
 
 **Install pm2**
 ```
-npm install -s pm2
+npm install -g pm2
 ```
 
 **Run application**
