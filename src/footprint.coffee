@@ -215,7 +215,6 @@ do ->
                     video = @video.get 0
                     @seekHandle.removeClass "active"
                     width = @el.width() - 4
-                    console.log [@seekHandle.offset().left, @el.offset().left, width]
                     point = (@seekHandle.offset().left - @el.offset().left) / width
                     if video.duration
                         video.currentTime = video.duration * point
