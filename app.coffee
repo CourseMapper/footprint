@@ -88,7 +88,6 @@ app.post "/save", (req, res, next) ->
 
     key = data.key
     delete data.key
-    console.log data
 
     searchObj =
         url: data.url

@@ -6,16 +6,13 @@ require "jquery.idle"
 sprite = require "../bower_components/plyr/dist/sprite.svg"
 require "../bower_components/plyr/dist/plyr.css"
 require "./styles.less"
+config = require "./config"
 
 $("body").prepend $ "<div style='display:none;'>#{sprite}</div>"
 
 do ->
 
-    getHost = ->
-        if location.hostname is "fp.dev"
-            "http://localhost:8080"
-        else
-            "http://46.101.153.234:8080"
+    getHost = -> config?.host || "http://localhost:8080"
 
     class Viewer
 

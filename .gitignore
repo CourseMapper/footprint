@@ -1,5 +1,6 @@
 node_modules
 bower_components
 coffeelint.json
+src/config.coffee
 .DS_Store
 dist/*

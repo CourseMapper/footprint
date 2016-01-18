@@ -12,7 +12,7 @@ gulp.task "build", ->
         .pipe browserify
             transform: ["coffeeify", "node-lessify", "jadeify", svg]
             extensions: [".coffee"]
-        #.pipe uglify()
+        .pipe uglify()
         .pipe rename "footprint.js"
         .pipe gulp.dest "./dist/"
 
