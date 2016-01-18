@@ -13,7 +13,7 @@ Pre-requisities:
 1. MongoDB
 2. NodeJS
 3. npm
- 
+
 **Install and run MongoDB**
 
 https://docs.mongodb.org/manual/installation/
@@ -36,6 +36,12 @@ npm install -g coffee-script
 npm install
 bower install
 ```
+**Update config file**
+```
+cp /src/config-example.coffee /src/config.coffee
+vim /src/config.coffee
+```
+Add a valid host.
 
 **Run pre-script compiler**
 ```
