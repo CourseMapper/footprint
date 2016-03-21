@@ -194,6 +194,14 @@ do ->
                 @el.find("canvas").remove()
                 false
 
+            fullScreenEvents = [
+                'webkitfullscreenchange'
+                'mozfullscreenchange'
+                'fullscreenchange'
+                'MSFullscreenChange'
+            ]
+            $(document).on fullScreenEvents.join(' '), => @el.css width: 0
+
             @seekHandle.on "mousedown", (e) =>
                 @isSeeking = true
                 { clientX, clientY } = e
